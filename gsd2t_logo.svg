@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <defs>
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0B1F3A"/>
+      <stop offset="100%" stop-color="#1E3A6C"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C9A96E"/>
+      <stop offset="100%" stop-color="#8C6A2F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Mark: stylized rising-sector bars inside a circle (sector rotation motif) -->
+  <g transform="translate(20,20)">
+    <circle cx="80" cy="80" r="78" fill="url(#navyGrad)" stroke="url(#goldGrad)" stroke-width="3"/>
+    <!-- 5 ascending bars representing sector rotation -->
+    <g transform="translate(35,115)">
+      <rect x="0"  y="-22" width="14" height="22" fill="#C9A96E" opacity="0.75"/>
+      <rect x="20" y="-38" width="14" height="38" fill="#C9A96E" opacity="0.85"/>
+      <rect x="40" y="-58" width="14" height="58" fill="#C9A96E" opacity="0.92"/>
+      <rect x="60" y="-46" width="14" height="46" fill="#C9A96E" opacity="0.85"/>
+      <rect x="80" y="-70" width="14" height="70" fill="#C9A96E"/>
+    </g>
+    <!-- Trend arrow overlay -->
+    <polyline points="38,98 58,80 78,62 98,72 118,42"
+              fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>
+    <polygon points="118,42 110,44 116,52" fill="#FFFFFF" opacity="0.85"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(195,0)">
+    <text x="0" y="95"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="60" font-weight="700" fill="#0B1F3A"
+          letter-spacing="2">GSD<tspan font-size="42" baseline-shift="super">2</tspan>T</text>
+    <text x="0" y="130"
+          font-family="Helvetica, Arial, sans-serif"
+          font-size="14" font-weight="500" fill="#1E3A6C"
+          letter-spacing="6">ASSET MANAGEMENT</text>
+    <line x1="0" y1="145" x2="380" y2="145" stroke="url(#goldGrad)" stroke-width="1.5"/>
+    <text x="0" y="167"
+          font-family="Helvetica, Arial, sans-serif"
+          font-size="11" font-style="italic" fill="#5A6F8C"
+          letter-spacing="1">SYSTEMATIC  ·  DISCIPLINED  ·  MACRO-AWARE</text>
+  </g>
+</svg>

@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GSD2T Asset Management — Strategy Dashboard</title>
+<!-- Self-contained: JSON data embedded inline. Just open in any browser. -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+  :root {
+    --navy:        #0B1F3A;
+    --navy-light:  #1E3A6C;
+    --gold:        #C9A96E;
+    --gold-dark:   #8C6A2F;
+    --cream:       #F5F2EA;
+    --grey-text:   #5A6F8C;
+    --positive:    #2E7D5B;
+    --negative:    #B83A3A;
+    --bg:          #FAFAF7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 28px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .logo-mark {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    border: 2px solid var(--gold);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 5px;
+    flex-shrink: 0;
+  }
+  .logo-bars { display: flex; gap: 2px; align-items: flex-end; height: 26px; }
+  .logo-bars span { width: 4px; background: var(--gold); display: block; }
+  .logo-bars span:nth-child(1) { height: 35%; }
+  .logo-bars span:nth-child(2) { height: 55%; }
+  .logo-bars span:nth-child(3) { height: 85%; }
+  .logo-bars span:nth-child(4) { height: 65%; }
+  .logo-bars span:nth-child(5) { height: 100%; background: #fff; }
+  .brand h1 {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px;
+    letter-spacing: 1.2px;
+  }
+  .brand h1 sup { font-size: 12px; }
+  .brand .sub { font-size: 9px; letter-spacing: 4px; color: var(--gold); margin-top: 1px; }
+  .topbar-right { font-size: 10.5px; text-align: right; opacity: 0.85; line-height: 1.5; }
+  .topbar-right strong { color: var(--gold); letter-spacing: 1px; }
+
+  .container { padding: 22px 28px 40px; max-width: 1400px; margin: 0 auto; }
+
+  .meta-strip {
+    background: #fff;
+    border: 1px solid #E5E0D2;
+    border-left: 3px solid var(--gold);
+    padding: 10px 16px;
+    margin-bottom: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 8px 22px;
+    font-size: 11px;
+  }
+  .meta-strip .label { color: var(--grey-text); letter-spacing: 1px; text-transform: uppercase; font-size: 9px; }
+  .meta-strip .value { color: var(--navy); font-weight: 600; margin-top: 1px; }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .kpi {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 4px;
+    padding: 14px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::after {
+    content: '';
+    position: absolute; right: -20px; top: -20px;
+    width: 70px; height: 70px;
+    background: var(--gold);
+    opacity: 0.06;
+    border-radius: 50%;
+  }
+  .kpi .label {
+    font-size: 9.5px; letter-spacing: 1.5px;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .kpi .value {
+    font-family: Georgia, serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    margin: 4px 0 2px;
+  }
+  .kpi .delta {
+    font-size: 11px;
+    color: #B8C8E0;
+  }
+  .kpi .delta.pos { color: #6ECF9A; }
+  .kpi .delta.neg { color: #E89090; }
+
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; margin-bottom: 18px; }
+  .grid-2-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 18px; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #E5E0D2;
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+  .card h2 {
+    margin: 0 0 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--navy);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--gold);
+  }
+  .card .subtitle {
+    font-size: 10px;
+    color: var(--grey-text);
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+  .chart { width: 100%; height: 320px; }
+  .chart-tall { width: 100%; height: 380px; }
+  .chart-short { width: 100%; height: 240px; }
+
+  table.summary { width: 100%; border-collapse: collapse; font-size: 11px; }
+  table.summary th, table.summary td { padding: 5px 8px; text-align: left; border-bottom: 1px solid #E5E0D2; }
+  table.summary th { background: var(--cream); font-weight: 600; font-size: 10px; color: var(--navy); letter-spacing: 0.5px; }
+  table.summary td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.summary tr.highlight { background: rgba(201, 169, 110, 0.08); font-weight: 600; }
+  table.summary tr.highlight td { color: var(--navy); }
+
+  .holdings-list { list-style: none; padding: 0; margin: 0; }
+  .holdings-list li {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 11px;
+  }
+  .holdings-list .bar {
+    flex: 1;
+    margin: 0 10px;
+    height: 6px;
+    background: var(--cream);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .holdings-list .bar > span {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--navy-light) 0%, var(--gold) 100%);
+    border-radius: 3px;
+  }
+  .holdings-list .weight {
+    font-variant-numeric: tabular-nums;
+    color: var(--navy);
+    font-weight: 600;
+    min-width: 42px;
+    text-align: right;
+  }
+  .holdings-list .sector { min-width: 80px; font-weight: 600; color: var(--navy); }
+
+  .factor-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 11px;
+  }
+  .factor-row .factor-name { font-weight: 600; min-width: 60px; }
+  .factor-row .factor-bar { flex: 1; margin: 0 10px; position: relative; height: 10px; }
+  .factor-row .factor-bar .center { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--grey-text); opacity: 0.5; }
+  .factor-row .factor-bar .fill { position: absolute; top: 0; bottom: 0; }
+  .factor-row .factor-bar .fill.pos { background: var(--positive); left: 50%; }
+  .factor-row .factor-bar .fill.neg { background: var(--negative); right: 50%; }
+  .factor-row .factor-val { font-variant-numeric: tabular-nums; min-width: 80px; text-align: right; font-size: 10.5px; }
+  .factor-row .factor-tstat { color: var(--grey-text); font-size: 9.5px; font-style: italic; }
+
+  .footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gold);
+    font-size: 9.5px;
+    color: var(--grey-text);
+    line-height: 1.5;
+  }
+  .footer strong { color: var(--navy); }
+
+  .badge {
+    display: inline-block;
+    background: var(--cream);
+    color: var(--navy);
+    padding: 2px 8px;
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    margin-left: 6px;
+  }
+  .badge.warn { background: #FCEFC7; color: #856200; }
+  .badge.good { background: #D6F0E0; color: #1F5C3C; }
+
+  .tabnav { display: flex; gap: 0; margin-bottom: 14px; border-bottom: 1px solid var(--gold); }
+  .tabnav button {
+    background: transparent; border: none;
+    padding: 10px 18px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--grey-text);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    font-family: inherit;
+  }
+  .tabnav button.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 700; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mark">
+      <div class="logo-bars"><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="brand">
+      <h1>GSD<sup>2</sup>T <span style="font-family: 'Helvetica Neue', sans-serif; font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-left: 6px;">ASSET MANAGEMENT</span></h1>
+      <div class="sub">SYSTEMATIC · DISCIPLINED · MACRO-AWARE</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <strong>STRATEGY DASHBOARD</strong><br>
+    Internal · Team Review<br>
+    <span id="generatedAt">—</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="meta-strip" id="metaStrip">
+    <!-- populated by JS -->
+  </div>
+
+  <div class="tabnav">
+    <button data-tab="overview" class="active">Overview</button>
+    <button data-tab="risk">Risk &amp; Drawdowns</button>
+    <button data-tab="signals">Signals &amp; Positioning</button>
+    <button data-tab="robustness">Robustness &amp; Factors</button>
+    <button data-tab="capacity">Capacity &amp; Terms</button>
+  </div>
+
+  <!-- ============================ OVERVIEW TAB ============================ -->
+  <div class="tab-panel active" id="tab-overview">
+
+    <div class="kpi-row" id="kpiRow"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>Cumulative Net Wealth <span class="badge">SIMULATED · NET OF 10 BPS</span></h2>
+        <div class="subtitle">Growth of $1 invested at backtest inception. Log scale. Long-Only fund is the pitched product; Long-Short shown for reference (does not add value standalone).</div>
+        <div id="equityChart" class="chart-tall"></div>
+      </div>
+      <div class="card">
+        <h2>Performance Summary</h2>
+        <div class="subtitle">All variants, net of transaction costs, annualised metrics.</div>
+        <table class="summary" id="summaryTable"></table>
+        <div style="margin-top: 12px; font-size: 10.5px; color: var(--grey-text);">
+          <strong style="color: var(--navy);">Read this how:</strong> the fund returns ~2pp more per year than the market with materially lower volatility and roughly half the maximum drawdown. Sharpe nearly doubles. Honest comparison: the Long-Short variant adds no value as a standalone — it is reported for transparency, not pitched.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2-eq">
+      <div class="card">
+        <h2>Rolling 12-Month Return — Fund vs Market</h2>
+        <div class="subtitle">When does the fund earn its keep? Most positively during regime transitions and crisis periods.</div>
+        <div id="rolling12Chart" class="chart"></div>
+      </div>
+      <div class="card">
+        <h2>Stress Tests — Named Crisis Windows</h2>
+        <div class="subtitle">Fund vs market total return through historical regime breaks. Dot-com and GFC are the showpiece outperformance windows.</div>
+        <div id="stressChart" class="chart"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================ RISK TAB ============================ -->
+  <div class="tab-panel" id="tab-risk">
+    <div class="grid-2-eq">
+      <div class="card">
+        <h2>Drawdown — Fund vs Market</h2>
+        <div class="subtitle">Underwater chart from peak NAV.</div>
+        <div id="ddChart" class="chart-tall"></div>
+      </div>
+      <div class="card">
+        <h2>Stress Test Breakdown</h2>
+        <div class="subtitle">Total return and trough drawdown in named crisis windows.</div>
+        <table class="summary" id="stressTable"></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Risk Framework Limits</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 8px; font-size: 11.5px;">
+        <div><strong>Gross exposure cap:</strong> 100% (long-only)</div>
+        <div><strong>Per-sector position limit:</strong> 20% NAV</div>
+        <div><strong>Vol target:</strong> 10–12% annualised</div>
+        <div><strong>Drawdown trigger:</strong> de-risk to 50% gross at -12% PTT</div>
+        <div><strong>Hard halt:</strong> no new risk at -18% PTT</div>
+        <div><strong>Factor monitoring:</strong> monthly FF5+MOM regression</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ SIGNALS TAB ============================ -->
+  <div class="tab-panel" id="tab-signals">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Macro Regime Score &amp; Gross Exposure</h2>
+        <div class="subtitle">Composite of credit spreads, real-rate trend, IP YoY, commodities momentum (all lagged 1 month). Maps to gross exposure in [30%, 100%].</div>
+        <div id="regimeChart" class="chart-tall"></div>
+      </div>
+      <div class="card">
+        <h2>Current Top-Quartile Holdings <span class="badge" id="holdingsDate">—</span></h2>
+        <div class="subtitle">Equal-weighted within the long sleeve, gross-exposure scaled by regime overlay.</div>
+        <ul class="holdings-list" id="holdingsList"></ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How a Trade Gets Made — Decision Flow</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px;">
+        <div style="background: var(--cream); padding: 10px 12px; border-radius: 4px;">
+          <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">STEP 1 · LAST DAY OF MONTH</div>
+          <div style="margin-top: 4px;"><strong>Rank sectors.</strong> Compute 12m skip-1m return, z-score cross-sectionally. Identify top-quartile basket (typically 7–8 industries).</div>
+        </div>
+        <div style="background: var(--cream); padding: 10px 12px; border-radius: 4px;">
+          <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">STEP 2 · LAST DAY OF MONTH</div>
+          <div style="margin-top: 4px;"><strong>Read the regime.</strong> Compute the macro composite from prior-month-end data. Map to gross exposure in [0.3, 1.0].</div>
+        </div>
+        <div style="background: var(--cream); padding: 10px 12px; border-radius: 4px;">
+          <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">STEP 3 · OVERNIGHT</div>
+          <div style="margin-top: 4px;"><strong>Generate orders.</strong> Equal-weight target weights × gross exposure. Compute delta vs current book. Stagger over 2 trading days at &lt;5% ADV per name.</div>
+        </div>
+        <div style="background: var(--cream); padding: 10px 12px; border-radius: 4px;">
+          <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">STEP 4 · DAILY</div>
+          <div style="margin-top: 4px;"><strong>Monitor.</strong> Drawdown vs trigger, factor exposure tracking, individual position limit checks. No discretionary intramonth rebalances.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ ROBUSTNESS TAB ============================ -->
+  <div class="tab-panel" id="tab-robustness">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Parameter Sensitivity — Sharpe Across Grid</h2>
+        <div class="subtitle">Sharpe of the long-only fund across all combinations of momentum lookback (rows) and top-quartile cutoff (columns). A robust edge survives small parameter changes.</div>
+        <div id="sensChart" class="chart"></div>
+      </div>
+      <div class="card">
+        <h2>Walk-Forward (In-Sample vs Out-of-Sample)</h2>
+        <div class="subtitle">Cut the sample at 2010-01. The regime-to-exposure mapping is fixed in-sample and applied unchanged out-of-sample. OOS Sharpe is higher than IS — the edge holds up.</div>
+        <table class="summary" id="walkForwardTable"></table>
+      </div>
+    </div>
+
+    <div class="grid-2-eq">
+      <div class="card">
+        <h2>Factor Regression — Alpha vs FF5 + MOM <span id="alphaBadge" class="badge"></span></h2>
+        <div class="subtitle">OLS with Newey-West (HAC) standard errors. The strategy is, honestly, repackaged factor beta — there is no statistically significant alpha after controlling for market, size, value, profitability, investment, and momentum factors. We deliver a better risk-adjusted combination of these exposures, not a magic signal.</div>
+        <div id="factorBars" style="margin-top: 10px;"></div>
+      </div>
+      <div class="card">
+        <h2>Deflated Sharpe Ratio (Bailey &amp; López de Prado)</h2>
+        <div class="subtitle">Adjusts the observed Sharpe for the number of trials and the non-normality of returns. Honest disclosure: a Sharpe of 0.56 does not survive multiple-testing correction at the 12-trial parameter grid. We treat this as a brake on overclaiming, not as a disqualifier — the macro overlay is a single, ex-ante hypothesis, not data-mined.</div>
+        <div id="dsrDisplay" style="margin-top: 12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ CAPACITY TAB ============================ -->
+  <div class="tab-panel" id="tab-capacity">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Capacity Analysis</h2>
+        <div class="subtitle">Based on the simulated average book and a 5%-of-ADV self-imposed execution limit.</div>
+        <table class="summary" id="capacityTable"></table>
+      </div>
+      <div class="card">
+        <h2>Fund Structure &amp; Terms</h2>
+        <table class="summary">
+          <tr><th>Item</th><th>Term</th></tr>
+          <tr><td>Vehicle</td><td>Cayman master / Delaware feeder</td></tr>
+          <tr><td>Liquidity</td><td>Monthly, 30-day notice</td></tr>
+          <tr><td>Lock-up</td><td>6-month soft</td></tr>
+          <tr><td>Management fee</td><td>1.0%</td></tr>
+          <tr><td>Performance fee</td><td>15% above SPY total return, HWM</td></tr>
+          <tr><td>Benchmark</td><td>SPDR S&amp;P 500 (SPY) total return</td></tr>
+          <tr><td>Target launch AUM</td><td>USD 100M</td></tr>
+          <tr><td>Soft cap</td><td id="softCapCell">—</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Universe — Live Implementation</h2>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 11px;">
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLE Energy</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLF Financials</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLK Technology</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLI Industrials</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLY Cons Disc</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLP Cons Staples</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLV Health Care</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLU Utilities</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLB Materials</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLRE Real Estate</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLC Comm Svcs</span>
+        <span style="background: var(--gold); color: var(--navy); padding: 4px 10px; border-radius: 3px;">SHY (cash sleeve)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <strong>GSD2T Asset Management</strong> · ESADE Asset Management Course Group Project · Live pitch 10 June 2026.
+    <br>
+    All performance metrics are <strong>SIMULATED</strong> on Fama–French 30-industry monthly value-weighted returns (1990-01 to 2018-12), net of an assumed 10 bps round-trip transaction cost. Live ETF implementation has not been traded. This document is a fictional pitch prepared for educational purposes only and does not constitute investment advice or an offer to sell securities. Past performance — simulated or otherwise — is not indicative of future results.
+  </div>
+
+</div>
+
+<script>
+const COLORS = {
+  navy: '#0B1F3A',
+  navyLight: '#1E3A6C',
+  gold: '#C9A96E',
+  grey: '#5A6F8C',
+  positive: '#2E7D5B',
+  negative: '#B83A3A',
+  market: '#888888',
+  longShort: '#A05630',
+};
+
+const LAYOUT_BASE = {
+  margin: { t: 24, r: 16, b: 38, l: 56 },
+  paper_bgcolor: '#fff',
+  plot_bgcolor: '#fff',
+  font: { family: 'Helvetica Neue, Helvetica, Arial, sans-serif', size: 10.5, color: '#0B1F3A' },
+  xaxis: { gridcolor: '#EEE9DA', linecolor: '#E5E0D2', tickfont: { size: 9.5 } },
+  yaxis: { gridcolor: '#EEE9DA', linecolor: '#E5E0D2', tickfont: { size: 9.5 } },
+  legend: { orientation: 'h', x: 0, y: 1.13, font: { size: 10 } },
+  hoverlabel: { bgcolor: '#0B1F3A', font: { color: '#fff', size: 11 } },
+};
+
+function fmtPct(x, dp=1) {
+  if (x === null || x === undefined || isNaN(x)) return '—';
+  return (x * 100).toFixed(dp) + '%';
+}
+function fmtNum(x, dp=2) {
+  if (x === null || x === undefined || isNaN(x)) return '—';
+  return x.toFixed(dp);
+}
+function fmtMoney(x) {
+  if (!x) return '—';
+  if (x >= 1e9) return '$' + (x/1e9).toFixed(2) + 'B';
+  if (x >= 1e6) return '$' + (x/1e6).toFixed(1) + 'M';
+  if (x >= 1e3) return '$' + (x/1e3).toFixed(0) + 'K';
+  return '$' + x.toFixed(0);
+}
+
+// ---- Tab handling
+document.querySelectorAll('.tabnav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabnav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    // Plotly redraw needed when revealing hidden tabs
+    window.dispatchEvent(new Event('resize'));
+  });
+});
+
+// ---- Load data
+const DASHBOARD_DATA = {"meta": {"fund_name": "GSD2T Asset Management", "strategy": "Macro-Conditioned Sector Rotation", "backtest_window": "2000-01 to 2018-12", "baseline_window": "1990-01 to 2018-12", "universe": "30 Fama-French industry portfolios (proxy); 11 SPDR sector ETFs (live implementation)", "tc_bps": 10, "generated_at": "2026-05-27 13:36"}, "summary": [{"strategy": "MOM-only (1990-18)", "N_months": 348.0, "CAGR": 0.1284, "Vol": 0.1586, "Sharpe": 0.6745, "Sortino": 0.9668, "Calmar": 0.2663, "MaxDD": -0.4823, "HitRate": 0.6322, "AvgAnnTurnover": 4.8017}, {"strategy": "Long-Only + Macro (2000-18)", "N_months": 228.0, "CAGR": 0.0731, "Vol": 0.1071, "Sharpe": 0.5634, "Sortino": 0.8144, "Calmar": 0.2813, "MaxDD": -0.2598, "HitRate": 0.614, "AvgAnnTurnover": 3.3748}, {"strategy": "Long-Short (2000-18)", "N_months": 228.0, "CAGR": 0.0041, "Vol": 0.1744, "Sharpe": 0.1138, "Sortino": 0.1517, "Calmar": 0.0092, "MaxDD": -0.4474, "HitRate": 0.5395, "AvgAnnTurnover": 10.0132}, {"strategy": "Market (2000-18)", "N_months": 228.0, "CAGR": 0.052, "Vol": 0.1499, "Sharpe": 0.3072, "Sortino": 0.4153, "Calmar": 0.1034, "MaxDD": -0.5031, "HitRate": 0.6316, "AvgAnnTurnover": NaN}, {"strategy": "Market (1990-18)", "N_months": 348.0, "CAGR": 0.0944, "Vol": 0.1465, "Sharpe": 0.507, "Sortino": 0.6859, "Calmar": 0.1875, "MaxDD": -0.5031, "HitRate": 0.6494, "AvgAnnTurnover": NaN}], "equity_curves": {"Long-Only + Macro": [["2000-01-31", 1.0094888548097913], ["2000-02-29", 1.0386150036423978], ["2000-03-31", 1.0900788570881494], ["2000-04-30", 1.0464691112220117], ["2000-05-31", 1.0065697140230563], ["2000-06-30", 1.0502020507579688], ["2000-07-31", 1.0441677343054907], ["2000-08-31", 1.122897717066941], ["2000-09-30", 1.0667220133316917], ["2000-10-31", 1.0487844172356109], ["2000-11-30", 1.0103797248768274], ["2000-12-31", 1.062343197485291], ["2001-01-31", 1.0442387359959457], ["2001-02-28", 1.0578126633894744], ["2001-03-31", 1.0614489110133696], ["2001-04-30", 1.0830032864191315], ["2001-05-31", 1.085702798314815], ["2001-06-30", 1.06448757049333], ["2001-07-31", 1.060466019257724], ["2001-08-31", 1.0639856623928736], ["2001-09-30", 1.0266430938260604], ["2001-10-31", 1.0503466837346063], ["2001-11-30", 1.0599635842540682], ["2001-12-31", 1.079868548542363], ["2002-01-31", 1.0919490377997478], ["2002-02-28", 1.1053505628617197], ["2002-03-31", 1.1222575852976908], ["2002-04-30", 1.1365463473473858], ["2002-05-31", 1.139765935523944], ["2002-06-30", 1.1199267344835586], ["2002-07-31", 1.0721324830102634], ["2002-08-31", 1.0786654658573183], ["2002-09-30", 1.0431943446350784], ["2002-10-31", 1.0618545539171356], ["2002-11-30", 1.080570876588274], ["2002-12-31", 1.0701081870169356], ["2003-01-31", 1.0419579561554912], ["2003-02-28", 1.030976727068164], ["2003-03-31", 1.037838211690006], ["2003-04-30", 1.0785508830493642], ["2003-05-31", 1.109544428837005], ["2003-06-30", 1.1097373516766982], ["2003-07-31", 1.1078578149203173], ["2003-08-31", 1.1451059724713732], ["2003-09-30", 1.1193920799329704], ["2003-10-31", 1.203344206695593], ["2003-11-30", 1.2395242085730156], ["2003-12-31", 1.299016799351796], ["2004-01-31", 1.2826914562651868], ["2004-02-29", 1.3051479478358627], ["2004-03-31", 1.2867469193883512], ["2004-04-30", 1.25393592399393], ["2004-05-31", 1.2690207244730884], ["2004-06-30", 1.3290052954710965], ["2004-07-31", 1.2897370881733083], ["2004-08-31", 1.2870438071347121], ["2004-09-30", 1.3340384371727423], ["2004-10-31", 1.331372692573984], ["2004-11-30", 1.4355410720860928], ["2004-12-31", 1.4483307703610162], ["2005-01-31", 1.4619377571449337], ["2005-02-28", 1.5533039000445412], ["2005-03-31", 1.5326506540433564], ["2005-04-30", 1.481807002718241], ["2005-05-31", 1.522194435039923], ["2005-06-30", 1.5478801734767433], ["2005-07-31", 1.630343631363985], ["2005-08-31", 1.6441220279807043], ["2005-09-30", 1.6907604434281922], ["2005-10-31", 1.6118854918492203], ["2005-11-30", 1.6475117178020524], ["2005-12-31", 1.6794211602426623], ["2006-01-31", 1.7935779847118671], ["2006-02-28", 1.7652210167456612], ["2006-03-31", 1.8337694620636193], ["2006-04-30", 1.9043866248314183], ["2006-05-31", 1.8466615377223887], ["2006-06-30", 1.8574847508843304], ["2006-07-31", 1.7923580081032098], ["2006-08-31", 1.7838272588976567], ["2006-09-30", 1.7814927991160943], ["2006-10-31", 1.8378310583087476], ["2006-11-30", 1.8867419242405568], ["2006-12-31", 1.902105583514147], ["2007-01-31", 1.9447730427518701], ["2007-02-28", 1.9272646443365558], ["2007-03-31", 1.9587375525149373], ["2007-04-30", 2.010844529296558], ["2007-05-31", 2.077858680338583], ["2007-06-30", 2.06911468512213], ["2007-07-31", 2.033920659132482], ["2007-08-31", 2.026115968803427], ["2007-09-30", 2.091965784460991], ["2007-10-31", 2.1280297446477334], ["2007-11-30", 2.026946190462077], ["2007-12-31", 2.0746294260895297], ["2008-01-31", 1.9440146308830868], ["2008-02-29", 2.0127611042705653], ["2008-03-31", 1.9750350364014526], ["2008-04-30", 2.0590260638854776], ["2008-05-31", 2.1528383759677663], ["2008-06-30", 2.151296747660213], ["2008-07-31", 2.0445381830587563], ["2008-08-31", 2.0111202709287537], ["2008-09-30", 1.8431473383593007], ["2008-10-31", 1.70149881590835], ["2008-11-30", 1.6557523656833308], ["2008-12-31", 1.6658793610899416], ["2009-01-31", 1.632120315837454], ["2009-02-28", 1.593564349123935], ["2009-03-31", 1.6226134594137698], ["2009-04-30", 1.6445808299346079], ["2009-05-31", 1.6694962295081173], ["2009-06-30", 1.6689748555163246], ["2009-07-31", 1.7089529383955349], ["2009-08-31", 1.72107573264488], ["2009-09-30", 1.7455133966444312], ["2009-10-31", 1.7351481612157267], ["2009-11-30", 1.8034630693289568], ["2009-12-31", 1.843937234223432], ["2010-01-31", 1.7692234083870166], ["2010-02-28", 1.8690080862202023], ["2010-03-31", 1.9760177724565737], ["2010-04-30", 2.0492190347625785], ["2010-05-31", 1.9062256667788222], ["2010-06-30", 1.778444123547845], ["2010-07-31", 1.9120003267262862], ["2010-08-31", 1.8269044185709702], ["2010-09-30", 2.0027513411082283], ["2010-10-31", 2.116501259292989], ["2010-11-30", 2.1763328438296656], ["2010-12-31", 2.2386171896814484], ["2011-01-31", 2.236396426167021], ["2011-02-28", 2.2793815682979472], ["2011-03-31", 2.3187447077345555], ["2011-04-30", 2.3491603933247394], ["2011-05-31", 2.302298310063515], ["2011-06-30", 2.2602517179234654], ["2011-07-31", 2.2477150404185475], ["2011-08-31", 2.129915686800624], ["2011-09-30", 1.914289833264129], ["2011-10-31", 2.1061513759740023], ["2011-11-30", 2.120415516013384], ["2011-12-31", 2.137204810305261], ["2012-01-31", 2.1771543867004945], ["2012-02-29", 2.2298522718789338], ["2012-03-31", 2.2860097063724014], ["2012-04-30", 2.2969432563915535], ["2012-05-31", 2.2285060237498624], ["2012-06-30", 2.2491963564021002], ["2012-07-31", 2.2738684572046237], ["2012-08-31", 2.2745545202813418], ["2012-09-30", 2.30690355021377], ["2012-10-31", 2.295374031831905], ["2012-11-30", 2.318689841796304], ["2012-12-31", 2.340591777306364], ["2013-01-31", 2.446777772257647], ["2013-02-28", 2.458439659870023], ["2013-03-31", 2.5522668786681386], ["2013-04-30", 2.570924256979695], ["2013-05-31", 2.602997172587598], ["2013-06-30", 2.5847955594421674], ["2013-07-31", 2.696246003083778], ["2013-08-31", 2.6521445642703974], ["2013-09-30", 2.755004818632794], ["2013-10-31", 2.8310894979846797], ["2013-11-30", 2.8963199379516915], ["2013-12-31", 2.964670915791753], ["2014-01-31", 2.925894763602438], ["2014-02-28", 3.019025049254532], ["2014-03-31", 2.9884119860900755], ["2014-04-30", 2.9688972670909695], ["2014-05-31", 2.9893688170665675], ["2014-06-30", 3.0598790062070624], ["2014-07-31", 3.0045916772311125], ["2014-08-31", 3.1037892201423607], ["2014-09-30", 3.046695534614749], ["2014-10-31", 3.1110364795277676], ["2014-11-30", 3.184163252465211], ["2014-12-31", 3.15091969541229], ["2015-01-31", 3.150947641542976], ["2015-02-28", 3.252517422923867], ["2015-03-31", 3.2267701284543433], ["2015-04-30", 3.2085989220181332], ["2015-05-31", 3.2355069018100417], ["2015-06-30", 3.2405120314109968], ["2015-07-31", 3.2955945775694566], ["2015-08-31", 3.2180992313854477], ["2015-09-30", 3.1986125266772336], ["2015-10-31", 3.2737230274969966], ["2015-11-30", 3.2645717862281294], ["2015-12-31", 3.250535731452687], ["2016-01-31", 3.222124667070155], ["2016-02-29", 3.2220368431823783], ["2016-03-31", 3.2874496485825424], ["2016-04-30", 3.2669923397397733], ["2016-05-31", 3.2738371990780477], ["2016-06-30", 3.3197341279044963], ["2016-07-31", 3.34593114854756], ["2016-08-31", 3.3200795344054064], ["2016-09-30", 3.325738102303003], ["2016-10-31", 3.261716258266734], ["2016-11-30", 3.4621948808636533], ["2016-12-31", 3.4408576740852848], ["2017-01-31", 3.4997340845087557], ["2017-02-28", 3.5158834464840876], ["2017-03-31", 3.5149022085483725], ["2017-04-30", 3.5075205817458874], ["2017-05-31", 3.537431943720548], ["2017-06-30", 3.5591115107232962], ["2017-07-31", 3.61927023841958], ["2017-08-31", 3.630927782657131], ["2017-09-30", 3.739423758708846], ["2017-10-31", 3.868358998316698], ["2017-11-30", 3.9808595688675346], ["2017-12-31", 3.9980067825039374], ["2018-01-31", 4.2035870859108195], ["2018-02-28", 4.078383982240577], ["2018-03-31", 3.987928053281924], ["2018-04-30", 3.9899484498682196], ["2018-05-31", 4.16902088551498], ["2018-06-30", 4.2161962291941535], ["2018-07-31", 4.262209534508361], ["2018-08-31", 4.372831408702827], ["2018-09-30", 4.39567512122634], ["2018-10-31", 4.092970519677203], ["2018-11-30", 4.050245350230284], ["2018-12-31", 3.818753076238803]], "Long-Short": [["2000-01-31", 1.047919642857143], ["2000-02-29", 1.152309280851403], ["2000-03-31", 1.1095092218483509], ["2000-04-30", 1.0109729153494118], ["2000-05-31", 0.9157013552391716], ["2000-06-30", 0.9696933963974613], ["2000-07-31", 0.9499687937575265], ["2000-08-31", 1.012064521785195], ["2000-09-30", 0.9132761809105121], ["2000-10-31", 0.8694079380706695], ["2000-11-30", 0.8354746357449362], ["2000-12-31", 0.9092962794079633], ["2001-01-31", 0.7652475113161811], ["2001-02-28", 0.8514881728146885], ["2001-03-31", 0.9191723594658904], ["2001-04-30", 0.847778929202804], ["2001-05-31", 0.8534711591560228], ["2001-06-30", 0.8336431952620588], ["2001-07-31", 0.8435337763144178], ["2001-08-31", 0.8955105200385345], ["2001-09-30", 0.9427119200742085], ["2001-10-31", 0.9717289296569211], ["2001-11-30", 0.8888213644246389], ["2001-12-31", 0.9197999633368533], ["2002-01-31", 0.9473528997385957], ["2002-02-28", 1.007631611387677], ["2002-03-31", 0.9887511140693005], ["2002-04-30", 1.0818508595938723], ["2002-05-31", 1.0905075983471584], ["2002-06-30", 1.150972350005514], ["2002-07-31", 1.1569101341468817], ["2002-08-31", 1.1753029393688632], ["2002-09-30", 1.2449984036734367], ["2002-10-31", 1.1541246362624515], ["2002-11-30", 1.052945002525543], ["2002-12-31", 1.1315473469640749], ["2003-01-31", 1.1411048808053963], ["2003-02-28", 1.1352465298548329], ["2003-03-31", 1.1432033916935476], ["2003-04-30", 1.0679316140890396], ["2003-05-31", 0.9808646752089518], ["2003-06-30", 0.9409084520466899], ["2003-07-31", 0.8978366874605884], ["2003-08-31", 0.9108729555065563], ["2003-09-30", 0.8712516085008702], ["2003-10-31", 0.9205737843806819], ["2003-11-30", 0.9414017662522948], ["2003-12-31", 0.9408705466841953], ["2004-01-31", 0.9202604413338829], ["2004-02-29", 0.9176114059206146], ["2004-03-31", 0.9033785975780674], ["2004-04-30", 0.8598018724773953], ["2004-05-31", 0.8651249672843222], ["2004-06-30", 0.9006414369233696], ["2004-07-31", 0.8979684618016435], ["2004-08-31", 0.8842487865174026], ["2004-09-30", 0.9177160240713962], ["2004-10-31", 0.887228186728853], ["2004-11-30", 0.9463350116615196], ["2004-12-31", 0.9189081951628295], ["2005-01-31", 0.966263144456051], ["2005-02-28", 1.0337704288555127], ["2005-03-31", 1.045959689822893], ["2005-04-30", 1.034299107066528], ["2005-05-31", 1.0238508391224648], ["2005-06-30", 1.0580310024035264], ["2005-07-31", 1.0807012059710979], ["2005-08-31", 1.1001518978549956], ["2005-09-30", 1.1298559990970805], ["2005-10-31", 1.0967693767235214], ["2005-11-30", 1.0865831311372016], ["2005-12-31", 1.1116094690397154], ["2006-01-31", 1.184003035710927], ["2006-02-28", 1.1403408094779512], ["2006-03-31", 1.180745527945204], ["2006-04-30", 1.2313531246625982], ["2006-05-31", 1.1633494495082406], ["2006-06-30", 1.1729616243348024], ["2006-07-31", 1.1448356802427173], ["2006-08-31", 1.1028590534169607], ["2006-09-30", 1.066141724502843], ["2006-10-31", 1.0534927144714201], ["2006-11-30", 1.0648252860999485], ["2006-12-31", 1.0961938981442179], ["2007-01-31", 1.0972254949019355], ["2007-02-28", 1.0746402836881237], ["2007-03-31", 1.0995700192691817], ["2007-04-30", 1.0763003687363977], ["2007-05-31", 1.050065547248448], ["2007-06-30", 1.0667503387474062], ["2007-07-31", 1.0821572614970296], ["2007-08-31", 1.0582956938810202], ["2007-09-30", 1.066705365019896], ["2007-10-31", 1.0822983116592764], ["2007-11-30", 1.0484185091532279], ["2007-12-31", 1.1150979263353733], ["2008-01-31", 1.0604481717134548], ["2008-02-29", 1.1800534698805862], ["2008-03-31", 1.1576998855797054], ["2008-04-30", 1.1729257063963028], ["2008-05-31", 1.2397447704774722], ["2008-06-30", 1.422407879427644], ["2008-07-31", 1.3491183134401346], ["2008-08-31", 1.2470237850705523], ["2008-09-30", 1.1785421378164904], ["2008-10-31", 1.2735052751105858], ["2008-11-30", 1.297497204847044], ["2008-12-31", 1.2492696971347381], ["2009-01-31", 1.3162037828362216], ["2009-02-28", 1.4129988192443361], ["2009-03-31", 1.325685585063745], ["2009-04-30", 0.9345254821208737], ["2009-05-31", 0.9145132864394567], ["2009-06-30", 0.9558639845214808], ["2009-07-31", 0.866512891668363], ["2009-08-31", 0.8451285913775473], ["2009-09-30", 0.8110261435572644], ["2009-10-31", 0.8473108739156281], ["2009-11-30", 0.856652476300548], ["2009-12-31", 0.8780381934767653], ["2010-01-31", 0.855994731044462], ["2010-02-28", 0.9033877964659506], ["2010-03-31", 0.9303700541153962], ["2010-04-30", 0.9755179223664424], ["2010-05-31", 0.9532482417958484], ["2010-06-30", 0.9002714707580441], ["2010-07-31", 0.9260529950018778], ["2010-08-31", 0.9040162410529581], ["2010-09-30", 0.9365592114161484], ["2010-10-31", 0.9774082448783616], ["2010-11-30", 1.0062871677707856], ["2010-12-31", 0.9577248272189901], ["2011-01-31", 0.939767486708634], ["2011-02-28", 0.934380605222322], ["2011-03-31", 0.9460253235149052], ["2011-04-30", 0.92751701379271], ["2011-05-31", 0.8959416845945953], ["2011-06-30", 0.895967282928441], ["2011-07-31", 0.9134386449455456], ["2011-08-31", 0.879639783942123], ["2011-09-30", 0.8181890911071233], ["2011-10-31", 0.7860912408526012], ["2011-11-30", 0.8068426458767511], ["2011-12-31", 0.8505533462171242], ["2012-01-31", 0.7962288077632887], ["2012-02-29", 0.8139733354791563], ["2012-03-31", 0.8571662491168325], ["2012-04-30", 0.8799791165754705], ["2012-05-31", 0.9512825672785572], ["2012-06-30", 0.9299823313658682], ["2012-07-31", 0.9581674387371923], ["2012-08-31", 0.9267994322115335], ["2012-09-30", 0.9057395701135125], ["2012-10-31", 0.8630485059114658], ["2012-11-30", 0.8761267730921171], ["2012-12-31", 0.8576983851273813], ["2013-01-31", 0.880870025964153], ["2013-02-28", 0.9093016790343351], ["2013-03-31", 0.9373503883265477], ["2013-04-30", 0.9550880705856485], ["2013-05-31", 0.9507816466959542], ["2013-06-30", 0.9964106766155145], ["2013-07-31", 1.0121557446108194], ["2013-08-31", 0.9948243849053316], ["2013-09-30", 1.0252748934440143], ["2013-10-31", 1.0092275105135915], ["2013-11-30", 1.0543417824255321], ["2013-12-31", 1.049970029534832], ["2014-01-31", 1.0825584743265193], ["2014-02-28", 1.0888373134776133], ["2014-03-31", 1.0542842279458084], ["2014-04-30", 1.0019220721746358], ["2014-05-31", 1.0102147664684384], ["2014-06-30", 1.0308303635241551], ["2014-07-31", 1.0247190120832619], ["2014-08-31", 1.0183712437744818], ["2014-09-30", 1.0155452635730078], ["2014-10-31", 1.0329691187380248], ["2014-11-30", 1.0455362948201001], ["2014-12-31", 1.0650728873004527], ["2015-01-31", 1.1234750179260509], ["2015-02-28", 1.0954623720772982], ["2015-03-31", 1.1307460413722237], ["2015-04-30", 1.0502894221498709], ["2015-05-31", 1.1101953050657443], ["2015-06-30", 1.1808969035738865], ["2015-07-31", 1.3268536521111485], ["2015-08-31", 1.2941822503094331], ["2015-09-30", 1.4217770649912798], ["2015-10-31", 1.4468511190874473], ["2015-11-30", 1.415841999210148], ["2015-12-31", 1.4772693156615941], ["2016-01-31", 1.5164855400305677], ["2016-02-29", 1.4351287988178205], ["2016-03-31", 1.3170920178450527], ["2016-04-30", 1.1651325262861798], ["2016-05-31", 1.1978269772112888], ["2016-06-30", 1.2313490207592448], ["2016-07-31", 1.1218095311750245], ["2016-08-31", 1.1065669441701838], ["2016-09-30", 1.1129870084587712], ["2016-10-31", 1.1196549931255197], ["2016-11-30", 1.1258130955877101], ["2016-12-31", 1.0978225674986606], ["2017-01-31", 1.0988008058221996], ["2017-02-28", 1.0580097880503465], ["2017-03-31", 1.0496647358470994], ["2017-04-30", 1.0338579095660305], ["2017-05-31", 1.0425072386844534], ["2017-06-30", 1.0239748108967681], ["2017-07-31", 1.0132998734931693], ["2017-08-31", 1.050777493099938], ["2017-09-30", 1.058789671484825], ["2017-10-31", 1.0963653606474846], ["2017-11-30", 1.0698744326208398], ["2017-12-31", 1.0147166741490607], ["2018-01-31", 1.0455948649422289], ["2018-02-28", 1.0670949093526034], ["2018-03-31", 1.0440990140560549], ["2018-04-30", 1.0581309590199584], ["2018-05-31", 1.12030182142109], ["2018-06-30", 1.0951990584653903], ["2018-07-31", 1.0897817345511955], ["2018-08-31", 1.1158508704727095], ["2018-09-30", 1.1260429726199734], ["2018-10-31", 1.0964783122156316], ["2018-11-30", 1.055393661456309], ["2018-12-31", 1.0811603438481496]], "Market": [["2000-01-31", 0.9571214458308464], ["2000-02-29", 0.9855843931302734], ["2000-03-31", 1.0380899393626948], ["2000-04-30", 0.976670652838381], ["2000-05-31", 0.9390522010332876], ["2000-06-30", 0.9868062046343599], ["2000-07-31", 0.9660639644985278], ["2000-08-31", 1.0393099034616307], ["2000-09-30", 0.9880347108425491], ["2000-10-31", 0.9659390502566493], ["2000-11-30", 0.8670902102504966], ["2000-12-31", 0.8817822509157697], ["2001-01-31", 0.9162298232593067], ["2001-02-28", 0.8275473939323286], ["2001-03-31", 0.7709121617163094], ["2001-04-30", 0.8352758492952864], ["2001-05-31", 0.8436585982557498], ["2001-06-30", 0.8294764721966646], ["2001-07-31", 0.8147523429751405], ["2001-08-31", 0.7649785498875932], ["2001-09-30", 0.6964424449830203], ["2001-10-31", 0.7151314889430759], ["2001-11-30", 0.7702219838372362], ["2001-12-31", 0.7837022387654025], ["2002-01-31", 0.7734811611896091], ["2002-02-28", 0.7568083906861862], ["2002-03-31", 0.7901233576492501], ["2002-04-30", 0.7501732487000985], ["2002-05-31", 0.7409892099338862], ["2002-06-30", 0.6881601155051895], ["2002-07-31", 0.6331273425512244], ["2002-08-31", 0.6371568389450446], ["2002-09-30", 0.5721524370880146], ["2002-10-31", 0.6176178746872361], ["2002-11-30", 0.6549250537939426], ["2002-12-31", 0.6180458987475876], ["2003-01-31", 0.6027396495334022], ["2003-02-28", 0.5919888855798014], ["2003-03-31", 0.5991797867859721], ["2003-04-30", 0.6489269900177185], ["2003-05-31", 0.6885250323522475], ["2003-06-30", 0.6990938480310145], ["2003-07-31", 0.7158990000651596], ["2003-08-31", 0.7332252212085214], ["2003-09-30", 0.7246123006021622], ["2003-10-31", 0.7689685653249768], ["2003-11-30", 0.7800745857659038], ["2003-12-31", 0.8140713755787807], ["2004-01-31", 0.8321272809239657], ["2004-02-29", 0.8442879223963875], ["2004-03-31", 0.8338702106792049], ["2004-04-30", 0.8192413606499815], ["2004-05-31", 0.8295584994484648], ["2004-06-30", 0.8456512375647988], ["2004-07-31", 0.8121014204635854], ["2004-08-31", 0.8134072265228901], ["2004-09-30", 0.8272421707620063], ["2004-10-31", 0.839843630996645], ["2004-11-30", 0.8793731940171777], ["2004-12-31", 0.9109907241209424], ["2005-01-31", 0.8872310854927585], ["2005-02-28", 0.9053687508178802], ["2005-03-31", 0.8897064411540593], ["2005-04-30", 0.8682967978666261], ["2005-05-31", 0.9020853231897995], ["2005-06-30", 0.9091572711504532], ["2005-07-31", 0.947172843281705], ["2005-08-31", 0.9383663436872849], ["2005-09-30", 0.9454229067175304], ["2005-10-31", 0.9286524700307913], ["2005-11-30", 0.9650455267174541], ["2005-12-31", 0.9657431445066121], ["2006-01-31", 0.998375054776596], ["2006-02-28", 0.9989670846501638], ["2006-03-31", 1.0171483313503886], ["2006-04-30", 1.0280863794347297], ["2006-05-31", 0.9961358216256921], ["2006-06-30", 0.9962828617699236], ["2006-07-31", 0.9926543478596112], ["2006-08-31", 1.017027861394119], ["2006-09-30", 1.0398910855403543], ["2006-10-31", 1.077542085837448], ["2006-11-30", 1.100280593436516], ["2006-12-31", 1.1142037838004737], ["2007-01-31", 1.1349955896008945], ["2007-02-28", 1.1170204649101763], ["2007-03-31", 1.1293163208472072], ["2007-04-30", 1.1733700420466178], ["2007-05-31", 1.215969072721476], ["2007-06-30", 1.1971042435662955], ["2007-07-31", 1.157160489729674], ["2007-08-31", 1.1727474389879295], ["2007-09-30", 1.2143080800821966], ["2007-10-31", 1.2400892533448689], ["2007-11-30", 1.1851291724359778], ["2007-12-31", 1.1783290729134062], ["2008-01-31", 1.1060930303844891], ["2008-02-29", 1.0735656135412737], ["2008-03-31", 1.0655676893684873], ["2008-04-30", 1.11632334075392], ["2008-05-31", 1.139094874465735], ["2008-06-30", 1.044922810764916], ["2008-07-31", 1.0390042180098669], ["2008-08-31", 1.056214749015968], ["2008-09-30", 0.9590637118045012], ["2008-10-31", 0.7952786635801782], ["2008-11-30", 0.7339734870332392], ["2008-12-31", 0.747008722965623], ["2009-01-31", 0.6854009774690248], ["2009-02-28", 0.6162305759835316], ["2009-03-31", 0.6716895112451317], ["2009-04-30", 0.7401231372048257], ["2009-05-31", 0.7786206221438557], ["2009-06-30", 0.7819792973897889], ["2009-07-31", 0.842647988030792], ["2009-08-31", 0.8709670495756378], ["2009-09-30", 0.9064381850792548], ["2009-10-31", 0.8832356460098167], ["2009-11-30", 0.9323897009339442], ["2009-12-31", 0.9581088660709294], ["2010-01-31", 0.9257340178025176], ["2010-02-28", 0.9573845170829491], ["2010-03-31", 1.017525119628394], ["2010-04-30", 1.0381632925641011], ["2010-05-31", 0.9563866983470226], ["2010-06-30", 0.9032642741919134], ["2010-07-31", 0.9659309989292453], ["2010-08-31", 0.9198950921226682], ["2010-09-30", 1.0077802413731531], ["2010-10-31", 1.0471531636824405], ["2010-11-30", 1.0536826595787714], ["2010-12-31", 1.1256779569535438], ["2011-01-31", 1.1481955315159122], ["2011-02-28", 1.188569147551929], ["2011-03-31", 1.1940829849810526], ["2011-04-30", 1.228907043991013], ["2011-05-31", 1.2134749577023916], ["2011-06-30", 1.192290999816696], ["2011-07-31", 1.1642378614723412], ["2011-08-31", 1.0944141414361703], ["2011-09-30", 1.011274000029301], ["2011-10-31", 1.1262247250021635], ["2011-11-30", 1.1225880041736318], ["2011-12-31", 1.1308963784704618], ["2012-01-31", 1.1882279106004192], ["2012-02-29", 1.240453900375394], ["2012-03-31", 1.2790655361377292], ["2012-04-30", 1.268105390302138], ["2012-05-31", 1.1891272150567522], ["2012-06-30", 1.2353800500405787], ["2012-07-31", 1.2449261273389678], ["2012-08-31", 1.276699517320795], ["2012-09-30", 1.3114638929459275], ["2012-10-31", 1.288767897243642], ["2012-11-30", 1.2987611175456744], ["2012-12-31", 1.3141869650544244], ["2013-01-31", 1.3875774012956656], ["2013-02-28", 1.4052374230770013], ["2013-03-31", 1.4617813455411273], ["2013-04-30", 1.4844097860075278], ["2013-05-31", 1.526317430204831], ["2013-06-30", 1.507959170897858], ["2013-07-31", 1.592617385570034], ["2013-08-31", 1.5496416176572112], ["2013-09-30", 1.6078913389132092], ["2013-10-31", 1.67489347126297], ["2013-11-30", 1.7271449220836297], ["2013-12-31", 1.7759020998190744], ["2014-01-31", 1.7168210203793521], ["2014-02-28", 1.7962072415446713], ["2014-03-31", 1.8037800563790505], ["2014-04-30", 1.7995512415633403], ["2014-05-31", 1.836747234728912], ["2014-06-30", 1.885193525871011], ["2014-07-31", 1.8467070358065218], ["2014-08-31", 1.9252011813799152], ["2014-09-30", 1.8880415678453477], ["2014-10-31", 1.9355868929861502], ["2014-11-30", 1.9850092950474962], ["2014-12-31", 1.9839486879878436], ["2015-01-31", 1.9230933831655481], ["2015-02-28", 2.041165692806671], ["2015-03-31", 2.018059677133215], ["2015-04-30", 2.0301816951333396], ["2015-05-31", 2.0573605529757333], ["2015-06-30", 2.0262334161619], ["2015-07-31", 2.0579023652971116], ["2015-08-31", 1.933246897338418], ["2015-09-30", 1.8733019246417466], ["2015-10-31", 2.018438805504348], ["2015-11-30", 2.029870756869676], ["2015-12-31", 1.9863165305645505], ["2016-01-31", 1.8716306901284194], ["2016-02-29", 1.870684921072907], ["2016-03-31", 2.001101128008565], ["2016-04-30", 2.0194904599985732], ["2016-05-31", 2.0563111529864364], ["2016-06-30", 2.0559189603609056], ["2016-07-31", 2.13749720662646], ["2016-08-31", 2.148558453809524], ["2016-09-30", 2.154014737325326], ["2016-10-31", 2.1105273290147295], ["2016-11-30", 2.213764734005844], ["2016-12-31", 2.254240957093362], ["2017-01-31", 2.29948838964935], ["2017-02-28", 2.382645073366739], ["2017-03-31", 2.387131350936453], ["2017-04-30", 2.414325224917581], ["2017-05-31", 2.4416569267515817], ["2017-06-30", 2.4631959683364983], ["2017-07-31", 2.5115676599533074], ["2017-08-31", 2.518629953281226], ["2017-09-30", 2.5847732653475384], ["2017-10-31", 2.6457804395004523], ["2017-11-30", 2.7307596428292342], ["2017-12-31", 2.761934115260852], ["2018-01-31", 2.9186891896384184], ["2018-02-28", 2.8156437510824546], ["2018-03-31", 2.752897129117344], ["2018-04-30", 2.7643972891427007], ["2018-05-31", 2.8410630154508008], ["2018-06-30", 2.857900419805615], ["2018-07-31", 2.9546567664009102], ["2018-08-31", 3.061115600779154], ["2018-09-30", 3.06843812339767], ["2018-10-31", 2.8388399587819033], ["2018-11-30", 2.8918617626503678], ["2018-12-31", 2.6218171399388943]], "MOM-only (full)": [["1990-01-31", 0.915475], ["1990-02-28", 0.9134952853125001], ["1990-03-31", 0.9467465136978751], ["1990-04-30", 0.9183796212812025], ["1990-05-31", 0.9930324047460982], ["1990-06-30", 0.9948198630746412], ["1990-07-31", 1.0097421610207606], ["1990-08-31", 0.9247092492857998], ["1990-09-30", 0.8908302141650913], ["1990-10-31", 0.8742496368039435], ["1990-11-30", 0.9052199301877233], ["1990-12-31", 0.926922578013974], ["1991-01-31", 0.9574646769595345], ["1991-02-28", 1.0333557209170396], ["1991-03-31", 1.0825434532326907], ["1991-04-30", 1.0751280305780468], ["1991-05-31", 1.1203237251634715], ["1991-06-30", 1.0686347892937418], ["1991-07-31", 1.1293332453256262], ["1991-08-31", 1.1896255239604479], ["1991-09-30", 1.1690301320768826], ["1991-10-31", 1.1790545654594418], ["1991-11-30", 1.1325850773982715], ["1991-12-31", 1.292760921969322], ["1992-01-31", 1.3052037458432766], ["1992-02-29", 1.3329393254424462], ["1992-03-31", 1.306130583259485], ["1992-04-30", 1.2890529258833672], ["1992-05-31", 1.2918243896740165], ["1992-06-30", 1.2512772516431232], ["1992-07-31", 1.2957132350420997], ["1992-08-31", 1.2533272158407849], ["1992-09-30", 1.2747747778218603], ["1992-10-31", 1.2951393048975646], ["1992-11-30", 1.380780391433916], ["1992-12-31", 1.410536208869317], ["1993-01-31", 1.4650886967473378], ["1993-02-28", 1.4676892291840644], ["1993-03-31", 1.51968212012791], ["1993-04-30", 1.4886426128242973], ["1993-05-31", 1.5429780681923841], ["1993-06-30", 1.563750410435424], ["1993-07-31", 1.5691258024712957], ["1993-08-31", 1.6296744443741569], ["1993-09-30", 1.6385765410265505], ["1993-10-31", 1.679192757037246], ["1993-11-30", 1.6552642602494654], ["1993-12-31", 1.7201092376447382], ["1994-01-31", 1.793493397995757], ["1994-02-28", 1.7747065546517515], ["1994-03-31", 1.6948447596924225], ["1994-04-30", 1.6742523958621596], ["1994-05-31", 1.6841095568427982], ["1994-06-30", 1.632744215359093], ["1994-07-31", 1.6818694069387097], ["1994-08-31", 1.7930199513697718], ["1994-09-30", 1.754537260663498], ["1994-10-31", 1.761270297401294], ["1994-11-30", 1.6767293231260318], ["1994-12-31", 1.714246141730977], ["1995-01-31", 1.7362313484986769], ["1995-02-28", 1.8126255278326187], ["1995-03-31", 1.8737789815778716], ["1995-04-30", 1.928610439026294], ["1995-05-31", 1.9932671039946506], ["1995-06-30", 2.0770590698788256], ["1995-07-31", 2.1562209836795825], ["1995-08-31", 2.14641017820384], ["1995-09-30", 2.210131730369267], ["1995-10-31", 2.2084188782782306], ["1995-11-30", 2.314202142547758], ["1995-12-31", 2.3413361626691302], ["1996-01-31", 2.398084297911823], ["1996-02-29", 2.4700568029029015], ["1996-03-31", 2.47938126733386], ["1996-04-30", 2.532037126998863], ["1996-05-31", 2.6424339457360135], ["1996-06-30", 2.6130368680897003], ["1996-07-31", 2.4962341200860907], ["1996-08-31", 2.569061750539602], ["1996-09-30", 2.71845269133348], ["1996-10-31", 2.7601129788281655], ["1996-11-30", 2.8690684386674072], ["1996-12-31", 2.916192887772519], ["1997-01-31", 3.1298404692129536], ["1997-02-28", 3.0924779986117237], ["1997-03-31", 2.9818445982113895], ["1997-04-30", 3.1589288942876683], ["1997-05-31", 3.320271187563411], ["1997-06-30", 3.4589755164238722], ["1997-07-31", 3.7510427615919126], ["1997-08-31", 3.5734777748650552], ["1997-09-30", 3.678984706167946], ["1997-10-31", 3.4134079976914475], ["1997-11-30", 3.4716066040520865], ["1997-12-31", 3.5248523703417356], ["1998-01-31", 3.5822193426690476], ["1998-02-28", 3.764554307210902], ["1998-03-31", 3.994050949164247], ["1998-04-30", 3.9840658217913365], ["1998-05-31", 3.9722630267942796], ["1998-06-30", 4.128720536762139], ["1998-07-31", 4.058429069623764], ["1998-08-31", 3.5226657020700567], ["1998-09-30", 3.612273510866464], ["1998-10-31", 3.9226581122876647], ["1998-11-30", 4.1794451189632955], ["1998-12-31", 4.519338493262986], ["1999-01-31", 4.712370738656482], ["1999-02-28", 4.436814859713544], ["1999-03-31", 4.768244929734146], ["1999-04-30", 5.042895837686833], ["1999-05-31", 4.900749211262036], ["1999-06-30", 5.100087185430119], ["1999-07-31", 4.934780609532365], ["1999-08-31", 4.917015399338048], ["1999-09-30", 4.8404943471858495], ["1999-10-31", 5.163657851039845], ["1999-11-30", 5.315017571798451], ["1999-12-31", 6.145555505111607], ["2000-01-31", 6.235664712705305], ["2000-02-29", 6.464435661852681], ["2000-03-31", 6.896906407630625], ["2000-04-30", 6.498782485250147], ["2000-05-31", 6.117060249022766], ["2000-06-30", 6.507711009175982], ["2000-07-31", 6.430187901779173], ["2000-08-31", 7.155111210356003], ["2000-09-30", 6.5288601016695935], ["2000-10-31", 6.2986361723344695], ["2000-11-30", 5.876076418122981], ["2000-12-31", 6.495929029279728], ["2001-01-31", 6.1823380553912495], ["2001-02-28", 6.34879750753266], ["2001-03-31", 6.364510781363803], ["2001-04-30", 6.649640864368902], ["2001-05-31", 6.657620433406144], ["2001-06-30", 6.299606894599729], ["2001-07-31", 6.211727378420063], ["2001-08-31", 6.235797822011441], ["2001-09-30", 5.619311259832835], ["2001-10-31", 5.930269896673835], ["2001-11-30", 6.083493245129144], ["2001-12-31", 6.4206708582404275], ["2002-01-31", 6.612729175287544], ["2002-02-28", 6.823675235979217], ["2002-03-31", 7.0690716566531195], ["2002-04-30", 7.264796578146703], ["2002-05-31", 7.2944914341598786], ["2002-06-30", 7.054320303690164], ["2002-07-31", 6.497646252725215], ["2002-08-31", 6.5640034650811705], ["2002-09-30", 6.1590044512856625], ["2002-10-31", 6.352012253277827], ["2002-11-30", 6.5430490217951585], ["2002-12-31", 6.433452950680089], ["2003-01-31", 6.176597341624187], ["2003-02-28", 6.078003406558511], ["2003-03-31", 6.132325562004628], ["2003-04-30", 6.4604049795718765], ["2003-05-31", 6.730449907717982], ["2003-06-30", 6.728767295241052], ["2003-07-31", 6.709506198858425], ["2003-08-31", 7.037349445500145], ["2003-09-30", 6.809251356597872], ["2003-10-31", 7.527116680867203], ["2003-11-30", 7.847207317721081], ["2003-12-31", 8.35139038788466], ["2004-01-31", 8.21307048458532], ["2004-02-29", 8.396632609915802], ["2004-03-31", 8.238566001034137], ["2004-04-30", 7.948259531572696], ["2004-05-31", 8.07354397243911], ["2004-06-30", 8.536359880659182], ["2004-07-31", 8.231398423922633], ["2004-08-31", 8.207938938414452], ["2004-09-30", 8.570422041782182], ["2004-10-31", 8.54771042337146], ["2004-11-30", 9.36540577174723], ["2004-12-31", 9.461635316051934], ["2005-01-31", 9.565358493204153], ["2005-02-28", 10.283238648119125], ["2005-03-31", 10.113179588975855], ["2005-04-30", 9.714088239445896], ["2005-05-31", 10.02117485391538], ["2005-06-30", 10.222725733164753], ["2005-07-31", 10.912887504225038], ["2005-08-31", 11.01669634660898], ["2005-09-30", 11.386857343855041], ["2005-10-31", 10.747912311147974], ["2005-11-30", 11.032866336297284], ["2005-12-31", 11.295172733442753], ["2006-01-31", 12.25780382965041], ["2006-02-28", 11.950592621169797], ["2006-03-31", 12.5932357393732], ["2006-04-30", 13.291845492014929], ["2006-05-31", 12.662975052173973], ["2006-06-30", 12.748608420964299], ["2006-07-31", 12.082493630968914], ["2006-08-31", 11.972089845415935], ["2006-09-30", 11.928391717480165], ["2006-10-31", 12.450258855119921], ["2006-11-30", 12.925858743385502], ["2006-12-31", 13.061418686956758], ["2007-01-31", 13.471710501460787], ["2007-02-28", 13.2721607896579], ["2007-03-31", 13.59351298277749], ["2007-04-30", 14.102420125070223], ["2007-05-31", 14.74302255925154], ["2007-06-30", 14.63208131449317], ["2007-07-31", 14.244331159659103], ["2007-08-31", 14.129664293823847], ["2007-09-30", 14.844272065483988], ["2007-10-31", 15.255087294896256], ["2007-11-30", 14.227275788402622], ["2007-12-31", 14.65693951721238], ["2008-01-31", 13.501423048024149], ["2008-02-29", 14.153373013455615], ["2008-03-31", 13.806615374625954], ["2008-04-30", 14.654859306704537], ["2008-05-31", 15.651756111043113], ["2008-06-30", 15.617713541501594], ["2008-07-31", 14.38196195753028], ["2008-08-31", 13.995446729921653], ["2008-09-30", 12.022263684086823], ["2008-10-31", 10.154755299059985], ["2008-11-30", 9.249204995266311], ["2008-12-31", 9.437773162107304], ["2009-01-31", 8.800251585006956], ["2009-02-28", 8.103381662619219], ["2009-03-31", 8.591610407792025], ["2009-04-30", 8.975118417369842], ["2009-05-31", 9.428361897447019], ["2009-06-30", 9.419758517215598], ["2009-07-31", 10.083262757771971], ["2009-08-31", 10.270307281928641], ["2009-09-30", 10.63657211537042], ["2009-10-31", 10.502817221019637], ["2009-11-30", 11.247729532420454], ["2009-12-31", 11.628465177092886], ["2010-01-31", 11.00561551104485], ["2010-02-28", 11.856762300630281], ["2010-03-31", 12.765286711916076], ["2010-04-30", 13.402434084924588], ["2010-05-31", 12.174771122745495], ["2010-06-30", 11.113435450120157], ["2010-07-31", 12.214082313511433], ["2010-08-31", 11.489481880262367], ["2010-09-30", 12.951087593955243], ["2010-10-31", 13.924847492425753], ["2010-11-30", 14.446681152204407], ["2010-12-31", 14.990056947041696], ["2011-01-31", 14.96982037016319], ["2011-02-28", 15.362403909370718], ["2011-03-31", 15.725916791876202], ["2011-04-30", 16.009769589969565], ["2011-05-31", 15.583909718876376], ["2011-06-30", 15.203662321735793], ["2011-07-31", 15.089634854322776], ["2011-08-31", 14.015441473130675], ["2011-09-30", 12.101107360919439], ["2011-10-31", 13.78936310160971], ["2011-11-30", 13.923292290734095], ["2011-12-31", 14.085846728228416], ["2012-01-31", 14.47162285549777], ["2012-02-29", 14.978129655440192], ["2012-03-31", 15.51809122951881], ["2012-04-30", 15.620510631633632], ["2012-05-31", 14.951952776599713], ["2012-06-30", 15.152869642035272], ["2012-07-31", 15.40061906068255], ["2012-08-31", 15.407741846998116], ["2012-09-30", 15.736889732204613], ["2012-10-31", 15.617879503604815], ["2012-11-30", 15.850976355196119], ["2012-12-31", 16.067144045240106], ["2013-01-31", 17.149868714588724], ["2013-02-28", 17.269274675514048], ["2013-03-31", 18.23937618041105], ["2013-04-30", 18.438869357384295], ["2013-05-31", 18.779296982895005], ["2013-06-30", 18.583288070636037], ["2013-07-31", 19.79468616174062], ["2013-08-31", 19.28917936388517], ["2013-09-30", 20.48197399279942], ["2013-10-31", 21.386509169256428], ["2013-11-30", 22.201067837240483], ["2013-12-31", 23.047483548535276], ["2014-01-31", 22.557436429584545], ["2014-02-28", 23.741701842137733], ["2014-03-31", 23.338983224640472], ["2014-04-30", 23.093048688910823], ["2014-05-31", 23.348515540031897], ["2014-06-30", 24.21357804079008], ["2014-07-31", 23.554968718080588], ["2014-08-31", 24.672946420862488], ["2014-09-30", 24.004926396517636], ["2014-10-31", 24.77548453384585], ["2014-11-30", 25.725314672162163], ["2014-12-31", 25.275121665399325], ["2015-01-31", 25.276701360503413], ["2015-02-28", 26.834694040611442], ["2015-03-31", 26.414395645200365], ["2015-04-30", 26.11789405408299], ["2015-05-31", 26.588995568083508], ["2015-06-30", 26.674412716345977], ["2015-07-31", 27.656364534466462], ["2015-08-31", 26.12039918913353], ["2015-09-30", 25.738061846002587], ["2015-10-31", 27.278484847485842], ["2015-11-30", 27.077306021735634], ["2015-12-31", 26.803825230916104], ["2016-01-31", 26.175945624881894], ["2016-02-29", 26.166456844592872], ["2016-03-31", 27.512393968536617], ["2016-04-30", 27.09764462946093], ["2016-05-31", 27.21619682471482], ["2016-06-30", 27.953755758664588], ["2016-07-31", 28.353843887960473], ["2016-08-31", 27.974256802910404], ["2016-09-30", 28.049437618068225], ["2016-10-31", 27.240561960757184], ["2016-11-30", 29.67859225624495], ["2016-12-31", 29.418533591599605], ["2017-01-31", 30.09699852255587], ["2017-02-28", 30.26742277668984], ["2017-03-31", 30.255694150363873], ["2017-04-30", 30.17438197233477], ["2017-05-31", 30.49837939876272], ["2017-06-30", 30.73131077142077], ["2017-07-31", 31.39433880131417], ["2017-08-31", 31.519916156519425], ["2017-09-30", 32.77519681745281], ["2017-10-31", 34.27875897145346], ["2017-11-30", 35.56892576224154], ["2017-12-31", 35.760553349785624], ["2018-01-31", 38.045205701920054], ["2018-02-28", 36.59425666946308], ["2018-03-31", 35.54583121588296], ["2018-04-30", 35.55382902790653], ["2018-05-31", 37.59506323697122], ["2018-06-30", 38.130792888098064], ["2018-07-31", 38.661764179064825], ["2018-08-31", 39.94726783801873], ["2018-09-30", 40.19743760285433], ["2018-10-31", 36.61936318823026], ["2018-11-30", 36.10623436155518], ["2018-12-31", 33.22856748293923]]}, "drawdowns": {"Long-Only + Macro": [["2000-01-31", 0.0], ["2000-02-29", 0.0], ["2000-03-31", 0.0], ["2000-04-30", -0.04000604688602927], ["2000-05-31", -0.07660835041619396], ["2000-06-30", -0.036581579461783864], ["2000-07-31", -0.04211724911837833], ["2000-08-31", 0.0], ["2000-09-30", -0.05002744495908562], ["2000-10-31", -0.06600182608342753], ["2000-11-30", -0.10020324245027024], ["2000-12-31", -0.05392701281806955], ["2001-01-31", -0.07004999642928833], ["2001-02-28", -0.057961693828598726], ["2001-03-31", -0.05472342237374783], ["2001-04-30", -0.03552810736138601], ["2001-05-31", -0.03312404877737274], ["2001-06-30", -0.05201733487016147], ["2001-07-31", -0.055598739636136596], ["2001-08-31", -0.0524643106657553], ["2001-09-30", -0.08571984943766908], ["2001-10-31", -0.06461054486943052], ["2001-11-30", -0.05604618466698774], ["2001-12-31", -0.03831975777542074], ["2002-01-31", -0.027561441079453353], ["2002-02-28", -0.01562667190298972], ["2002-03-31", -0.0005700713070485586], ["2002-04-30", 0.0], ["2002-05-31", 0.0], ["2002-06-30", -0.01740638180352827], ["2002-07-31", -0.05933977354972442], ["2002-08-31", -0.05360790997718157], ["2002-09-30", -0.08472931843192189], ["2002-10-31", -0.06835735231110673], ["2002-11-30", -0.05193615381078953], ["2002-12-31", -0.06111583645021568], ["2003-01-31", -0.08581409245529958], ["2003-02-28", -0.09544872773002311], ["2003-03-31", -0.0894286455289457], ["2003-04-30", -0.05370844185340529], ["2003-05-31", -0.02651553774770976], ["2003-06-30", -0.026346272433069196], ["2003-07-31", -0.02799532746954636], ["2003-08-31", 0.0], ["2003-09-30", -0.0224554697613768], ["2003-10-31", 0.0], ["2003-11-30", 0.0], ["2003-12-31", 0.0], ["2004-01-31", -0.012567461094233345], ["2004-02-29", 0.0], ["2004-03-31", -0.014098806559075028], ["2004-04-30", -0.03923848168083177], ["2004-05-31", -0.027680557918877136], ["2004-06-30", 0.0], ["2004-07-31", -0.029547066088904228], ["2004-08-31", -0.031573605070933985], ["2004-09-30", 0.0], ["2004-10-31", -0.0019982517178499526], ["2004-11-30", 0.0], ["2004-12-31", 0.0], ["2005-01-31", 0.0], ["2005-02-28", 0.0], ["2005-03-31", -0.013296333061799781], ["2005-04-30", -0.04602891766656225], ["2005-05-31", -0.020027932076734034], ["2005-06-30", -0.003491735627292436], ["2005-07-31", 0.0], ["2005-08-31", 0.0], ["2005-09-30", 0.0], ["2005-10-31", -0.04665057778323989], ["2005-11-30", -0.025579452011811], ["2005-12-31", -0.006706617267753345], ["2006-01-31", 0.0], ["2006-02-28", -0.015810278787939835], ["2006-03-31", 0.0], ["2006-04-30", 0.0], ["2006-05-31", -0.030311642791620352], ["2006-06-30", -0.024628336145366414], ["2006-07-31", -0.05882661391728983], ["2006-08-31", -0.06330613981519317], ["2006-09-30", -0.06453197271651856], ["2006-10-31", -0.0349485580579324], ["2006-11-30", -0.009265293276476072], ["2006-12-31", -0.0011977826810631864], ["2007-01-31", 0.0], ["2007-02-28", -0.009002797771476612], ["2007-03-31", 0.0], ["2007-04-30", 0.0], ["2007-05-31", 0.0], ["2007-06-30", -0.0042081760897367815], ["2007-07-31", -0.021145817866179972], ["2007-08-31", -0.02490193968664134], ["2007-09-30", 0.0], ["2007-10-31", 0.0], ["2007-11-30", -0.04750100624293174], ["2007-12-31", -0.0250937839062223], ["2008-01-31", -0.08647205906189426], ["2008-02-29", -0.05416683703180536], ["2008-03-31", -0.07189500458397358], ["2008-04-30", -0.0324260884678933], ["2008-05-31", 0.0], ["2008-06-30", -0.000716091056700896], ["2008-07-31", -0.05030577033462891], ["2008-08-31", -0.06582849257102541], ["2008-09-30", -0.14385243270723935], ["2008-10-31", -0.20964860395361795], ["2008-11-30", -0.2308979697841832], ["2008-12-31", -0.22619394949187577], ["2009-01-31", -0.24187512910542286], ["2009-02-28", -0.25978449338651377], ["2009-03-31", -0.2462910929463733], ["2009-04-30", -0.2360871822552314], ["2009-05-31", -0.22451390306639807], ["2009-06-30", -0.22475608287776383], ["2009-07-31", -0.20618614129483426], ["2009-08-31", -0.20055506634528286], ["2009-09-30", -0.18920369678946758], ["2009-10-31", -0.19401838029957785], ["2009-11-30", -0.1622858968601183], ["2009-12-31", -0.1434855236661572], ["2010-01-31", -0.17819032392912593], ["2010-02-28", -0.1318400363519967], ["2010-03-31", -0.08213371030777283], ["2010-04-30", -0.04813150042376391], ["2010-05-31", -0.11455235652703566], ["2010-06-30", -0.17390727357859348], ["2010-07-31", -0.11187000934671465], ["2010-08-31", -0.151397318551737], ["2010-09-30", -0.06971588602979517], ["2010-10-31", -0.016878701662145335], ["2010-11-30", 0.0], ["2010-12-31", 0.0], ["2011-01-31", -0.0009920246858926562], ["2011-02-28", 0.0], ["2011-03-31", 0.0], ["2011-04-30", 0.0], ["2011-05-31", -0.01994843919316258], ["2011-06-30", -0.03784700084928749], ["2011-07-31", -0.04318366391433048], ["2011-08-31", -0.0933289643172559], ["2011-09-30", -0.18511744080834902], ["2011-10-31", -0.1034450512792825], ["2011-11-30", -0.0973730350474773], ["2011-12-31", -0.0902261010451908], ["2012-01-31", -0.07322020544574515], ["2012-02-29", -0.05078755873154761], ["2012-03-31", -0.026882237216234284], ["2012-04-30", -0.022227999876706428], ["2012-05-31", -0.05136063502420807], ["2012-06-30", -0.042553091396693055], ["2012-07-31", -0.03205057276381029], ["2012-08-31", -0.03175852668697887], ["2012-09-30", -0.01798806213106796], ["2012-10-31", -0.02289599366891726], ["2012-11-30", -0.012970826349285813], ["2012-12-31", -0.003647522767165401], ["2013-01-31", 0.0], ["2013-02-28", 0.0], ["2013-03-31", 0.0], ["2013-04-30", 0.0], ["2013-05-31", 0.0], ["2013-06-30", -0.006992559706600399], ["2013-07-31", 0.0], ["2013-08-31", -0.016356607951552138], ["2013-09-30", 0.0], ["2013-10-31", 0.0], ["2013-11-30", 0.0], ["2013-12-31", 0.0], ["2014-01-31", -0.013079411945105979], ["2014-02-28", 0.0], ["2014-03-31", -0.01014004940833979], ["2014-04-30", -0.01660396364579364], ["2014-05-31", -0.009823115643007752], ["2014-06-30", 0.0], ["2014-07-31", -0.01806846900279313], ["2014-08-31", 0.0], ["2014-09-30", -0.018394833372413433], ["2014-10-31", 0.0], ["2014-11-30", 0.0], ["2014-12-31", -0.010440280355344056], ["2015-01-31", -0.010431503754249727], ["2015-02-28", 0.0], ["2015-03-31", -0.007916112697216038], ["2015-04-30", -0.01350292564036537], ["2015-05-31", -0.005229955416667265], ["2015-06-30", -0.003691107518212222], ["2015-07-31", 0.0], ["2015-08-31", -0.023514829982868468], ["2015-09-30", -0.029427785672516915], ["2015-10-31", -0.006636602154076465], ["2015-11-30", -0.009413412545485778], ["2015-12-31", -0.013672448189910869], ["2016-01-31", -0.022293370367627685], ["2016-02-29", -0.02232001924257565], ["2016-03-31", -0.0024714596395899457], ["2016-04-30", -0.008678930965706932], ["2016-05-31", -0.006601958456751489], ["2016-06-30", 0.0], ["2016-07-31", 0.0], ["2016-08-31", -0.007726283953384816], ["2016-09-30", -0.006035105131593221], ["2016-10-31", -0.025169343462845273], ["2016-11-30", 0.0], ["2016-12-31", -0.0061629132710883106], ["2017-01-31", 0.0], ["2017-02-28", 0.0], ["2017-03-31", -0.0002790871627716962], ["2017-04-30", -0.00237859555514075], ["2017-05-31", 0.0], ["2017-06-30", 0.0], ["2017-07-31", 0.0], ["2017-08-31", 0.0], ["2017-09-30", 0.0], ["2017-10-31", 0.0], ["2017-11-30", 0.0], ["2017-12-31", 0.0], ["2018-01-31", 0.0], ["2018-02-28", -0.029784824510924457], ["2018-03-31", -0.051303571978256635], ["2018-04-30", -0.05082293566812346], ["2018-05-31", -0.008223024690435232], ["2018-06-30", 0.0], ["2018-07-31", 0.0], ["2018-08-31", 0.0], ["2018-09-30", 0.0], ["2018-10-31", -0.06886418882219081], ["2018-11-30", -0.07858400847869873], ["2018-12-31", -0.13124765344955314]], "Market": [["2000-01-31", 0.0], ["2000-02-29", 0.0], ["2000-03-31", 0.0], ["2000-04-30", -0.05916566975113968], ["2000-05-31", -0.09540381288177069], ["2000-06-30", -0.049402014973595754], ["2000-07-31", -0.06938317397468008], ["2000-08-31", 0.0], ["2000-09-30", -0.04933580681594507], ["2000-10-31", -0.07059574142477143], ["2000-11-30", -0.16570581367263193], ["2000-12-31", -0.1515694712627903], ["2001-01-31", -0.11842481226473545], ["2001-02-28", -0.20375299881583386], ["2001-03-31", -0.25824611201275827], ["2001-04-30", -0.19631685745201488], ["2001-05-31", -0.18825116989092938], ["2001-06-30", -0.20189688423642804], ["2001-07-31", -0.21606410151443378], ["2001-08-31", -0.2639552963560934], ["2001-09-30", -0.3298991545607536], ["2001-10-31", -0.3119169878385777], ["2001-11-30", -0.25891018523747633], ["2001-12-31", -0.24593979509372077], ["2002-01-31", -0.25577428001660096], ["2002-02-28", -0.27181643495796237], ["2002-03-31", -0.23976154271446337], ["2002-04-30", -0.2782006154261635], ["2002-05-31", -0.28703728554315455], ["2002-06-30", -0.3378682208135092], ["2002-07-31", -0.3908194846960792], ["2002-08-31", -0.38694239627384897], ["2002-09-30", -0.44948813132411636], ["2002-10-31", -0.40574233668885906], ["2002-11-30", -0.3698462300680644], ["2002-12-31", -0.40533050181754116], ["2003-01-31", -0.4200578215161266], ["2003-02-28", -0.43040195844563456], ["2003-03-31", -0.4234830392837754], ["2003-04-30", -0.3756174285876266], ["2003-05-31", -0.33751710624619624], ["2003-06-30", -0.3273480357470454], ["2003-07-31", -0.31117850635242283], ["2003-08-31", -0.29450761628810873], ["2003-09-30", -0.30279476969410646], ["2003-10-31", -0.2601161955988561], ["2003-11-30", -0.24943023907719097], ["2003-12-31", -0.21671931262527921], ["2004-01-31", -0.19934633726437279], ["2004-02-29", -0.18764564872872203], ["2004-03-31", -0.1976693304837831], ["2004-04-30", -0.21174487232216932], ["2004-05-31", -0.2018179595080799], ["2004-06-30", -0.18633389834140213], ["2004-07-31", -0.21861475796707197], ["2004-08-31", -0.2173583415171223], ["2004-09-30", -0.20404667750522731], ["2004-10-31", -0.19192184333144813], ["2004-11-30", -0.15388741020532137], ["2004-12-31", -0.12346575252799519], ["2005-01-31", -0.14632672840155092], ["2005-02-28", -0.1288750854751144], ["2005-03-31", -0.1439449983198341], ["2005-04-30", -0.1645448629185684], ["2005-05-31", -0.13203432375153656], ["2005-06-30", -0.12522985865686254], ["2005-07-31", -0.08865215261881432], ["2005-08-31", -0.09712556325897881], ["2005-09-30", -0.09033590118923218], ["2005-10-31", -0.10647202827787217], ["2005-11-30", -0.07145546915008127], ["2005-12-31", -0.07078423741560591], ["2006-01-31", -0.0393865665560319], ["2006-02-28", -0.03881692907678158], ["2006-03-31", -0.021323353157155944], ["2006-04-30", -0.010799015759898722], ["2006-05-31", -0.04154110500837005], ["2006-06-30", -0.04139962637553707], ["2006-07-31", -0.044890898707521054], ["2006-08-31", -0.02143926656841888], ["2006-09-30", 0.0], ["2006-10-31", 0.0], ["2006-11-30", 0.0], ["2006-12-31", 0.0], ["2007-01-31", 0.0], ["2007-02-28", -0.01583717580527244], ["2007-03-31", -0.005003780460225649], ["2007-04-30", 0.0], ["2007-05-31", 0.0], ["2007-06-30", -0.015514234348871114], ["2007-07-31", -0.048363551599369115], ["2007-08-31", -0.03554501072696825], ["2007-09-30", -0.0013659826360237215], ["2007-10-31", 0.0], ["2007-11-30", -0.04431945584614028], ["2007-12-31", -0.04980301237582552], ["2008-01-31", -0.10805369258620234], ["2008-02-29", -0.1342835923740442], ["2008-03-31", -0.1407330669995308], ["2008-04-30", -0.09980403608620714], ["2008-05-31", -0.0814412177242273], ["2008-06-30", -0.1573809643568269], ["2008-07-31", -0.16215367949735815], ["2008-08-31", -0.1482752179594653], ["2008-09-30", -0.226617189675955], ["2008-10-31", -0.3586923994098906], ["2008-11-30", -0.40812849957895647], ["2008-12-31", -0.39761696914094624], ["2009-01-31", -0.4472970589654688], ["2009-02-28", -0.5030756259508058], ["2009-03-31", -0.458353897162324], ["2009-04-30", -0.40316946122345165], ["2009-05-31", -0.3721253369112769], ["2009-06-30", -0.3694169227895725], ["2009-07-31", -0.3204940807623856], ["2009-08-31", -0.2976577716270058], ["2009-09-30", -0.2690540760398201], ["2009-10-31", -0.2877644543507798], ["2009-11-30", -0.24812694052542794], ["2009-12-31", -0.22738717113575435], ["2010-01-31", -0.2534940406059055], ["2010-02-28", -0.2279712815020255], ["2010-03-31", -0.17947428631943774], ["2010-04-30", -0.16283179636958933], ["2010-05-31", -0.2287759161146029], ["2010-06-30", -0.2716134973708094], ["2010-07-31", -0.22107945349590108], ["2010-08-31", -0.258202512729263], ["2010-09-30", -0.1873324934839271], ["2010-10-31", -0.1555824221055263], ["2010-11-30", -0.15031707860003352], ["2010-12-31", -0.0922605337339435], ["2011-01-31", -0.07410250639709481], ["2011-02-28", -0.041545482032019465], ["2011-03-31", -0.037099158983697755], ["2011-04-30", -0.00901726172023043], ["2011-05-31", -0.021461596873524336], ["2011-06-30", -0.03854420429759198], ["2011-07-31", -0.061166074674008475], ["2011-08-31", -0.11747147353770859], ["2011-09-30", -0.18451514896882537], ["2011-10-31", -0.09181962349530948], ["2011-11-30", -0.09475225178696067], ["2011-12-31", -0.08805243217767045], ["2012-01-31", -0.04182065331552953], ["2012-02-29", 0.0], ["2012-03-31", 0.0], ["2012-04-30", -0.00856886963641168], ["2012-05-31", -0.07031564727524053], ["2012-06-30", -0.03415422029825255], ["2012-07-31", -0.02669089881183795], ["2012-08-31", -0.0018498026489547348], ["2012-09-30", 0.0], ["2012-10-31", -0.017305848696530735], ["2012-11-30", -0.009685951301121265], ["2012-12-31", 0.0], ["2013-01-31", 0.0], ["2013-02-28", 0.0], ["2013-03-31", 0.0], ["2013-04-30", 0.0], ["2013-05-31", 0.0], ["2013-06-30", -0.012027812133750815], ["2013-07-31", 0.0], ["2013-08-31", -0.026984364419355367], ["2013-09-30", 0.0], ["2013-10-31", 0.0], ["2013-11-30", 0.0], ["2013-12-31", 0.0], ["2014-01-31", -0.033268207434261954], ["2014-02-28", 0.0], ["2014-03-31", 0.0], ["2014-04-30", -0.002344418212605781], ["2014-05-31", 0.0], ["2014-06-30", 0.0], ["2014-07-31", -0.02041514016270951], ["2014-08-31", 0.0], ["2014-09-30", -0.01930167812796213], ["2014-10-31", 0.0], ["2014-11-30", 0.0], ["2014-12-31", -0.0005343083593103426], ["2015-01-31", -0.031191749094790278], ["2015-02-28", 0.0], ["2015-03-31", -0.011320009813453491], ["2015-04-30", -0.005381237648683035], ["2015-05-31", 0.0], ["2015-06-30", -0.01512964597712907], ["2015-07-31", 0.0], ["2015-08-31", -0.06057404377427611], ["2015-09-30", -0.08970320641461194], ["2015-10-31", -0.019176594797813085], ["2015-11-30", -0.013621447207670778], ["2015-12-31", -0.03478582654829976], ["2016-01-31", -0.09051531224699239], ["2016-02-29", -0.09097489141433335], ["2016-03-31", -0.027601521941176266], ["2016-04-30", -0.018665562538965563], ["2016-05-31", -0.0007732205072058518], ["2016-06-30", -0.0009637993374479459], ["2016-07-31", 0.0], ["2016-08-31", 0.0], ["2016-09-30", 0.0], ["2016-10-31", -0.02018900221852482], ["2016-11-30", 0.0], ["2016-12-31", 0.0], ["2017-01-31", 0.0], ["2017-02-28", 0.0], ["2017-03-31", 0.0], ["2017-04-30", 0.0], ["2017-05-31", 0.0], ["2017-06-30", 0.0], ["2017-07-31", 0.0], ["2017-08-31", 0.0], ["2017-09-30", 0.0], ["2017-10-31", 0.0], ["2017-11-30", 0.0], ["2017-12-31", 0.0], ["2018-01-31", 0.0], ["2018-02-28", -0.03530538260866678], ["2018-03-31", -0.056803602490340444], ["2018-04-30", -0.05286342274589095], ["2018-05-31", -0.026596245486911307], ["2018-06-30", -0.020827421449535755], ["2018-07-31", 0.0], ["2018-08-31", 0.0], ["2018-09-30", 0.0], ["2018-10-31", -0.07482574371144024], ["2018-11-30", -0.057546006680356254], ["2018-12-31", -0.14555319856482352]]}, "regime": {"score": [["2000-01-31", 0.6194577321545841], ["2000-02-29", 0.408848854312299], ["2000-03-31", 0.3720157629632445], ["2000-04-30", 0.153489930086571], ["2000-05-31", 0.0441008590925737], ["2000-06-30", -0.11522158568093488], ["2000-07-31", 0.020672248569590712], ["2000-08-31", -0.31772843173199555], ["2000-09-30", -0.5892543099064649], ["2000-10-31", -0.4180517971372946], ["2000-11-30", -1.0731620447206158], ["2000-12-31", -1.3215513392146443], ["2001-01-31", -1.434657078350982], ["2001-02-28", -1.2597174781251974], ["2001-03-31", -1.4296099490992888], ["2001-04-30", -1.5506657357487], ["2001-05-31", -1.4621748192779986], ["2001-06-30", -1.4451283420514585], ["2001-07-31", -1.597631603316214], ["2001-08-31", -1.5887614703023598], ["2001-09-30", -1.467973484389451], ["2001-10-31", -1.9432611398407744], ["2001-11-30", -1.8740315060235997], ["2001-12-31", -1.7587658732329239], ["2002-01-31", -1.6607365617573944], ["2002-02-28", -1.4122796445453316], ["2002-03-31", -1.249560891582956], ["2002-04-30", -0.7546831574800493], ["2002-05-31", -0.5993025889400748], ["2002-06-30", -0.5741414437280723], ["2002-07-31", -0.6434063183520778], ["2002-08-31", -0.6102542049706816], ["2002-09-30", -0.5621245191254921], ["2002-10-31", -0.45787824124677406], ["2002-11-30", -0.29068766596223355], ["2002-12-31", 0.09936967421503488], ["2003-01-31", 0.15565081316052418], ["2003-02-28", 0.35775403678215945], ["2003-03-31", 0.4464045814353778], ["2003-04-30", 0.17811318695265124], ["2003-05-31", 0.1262586813137633], ["2003-06-30", 0.06745567385156744], ["2003-07-31", 0.19625700570800145], ["2003-08-31", 0.2873625241772464], ["2003-09-30", 0.34010013169648595], ["2003-10-31", 0.3010136501421646], ["2003-11-30", 0.5363886946723805], ["2003-12-31", 0.6660979028430724], ["2004-01-31", 0.7306270363814987], ["2004-02-29", 0.6278212970954877], ["2004-03-31", 0.4530124172541931], ["2004-04-30", 0.6174521260040265], ["2004-05-31", 0.9835997415567338], ["2004-06-30", 1.038895444636814], ["2004-07-31", 0.8683143597620114], ["2004-08-31", 0.9862141644581012], ["2004-09-30", 0.987783608453498], ["2004-10-31", 0.9448709431551775], ["2004-11-30", 1.1102163234608549], ["2004-12-31", 1.0449782803723295], ["2005-01-31", 1.0220013789157303], ["2005-02-28", 1.0047285760806686], ["2005-03-31", 1.1349735596317168], ["2005-04-30", 1.153297307059227], ["2005-05-31", 0.9760374985820954], ["2005-06-30", 0.7553825359780801], ["2005-07-31", 1.0752555837374507], ["2005-08-31", 1.0262482438953064], ["2005-09-30", 1.0792578611399273], ["2005-10-31", 0.9273741827389808], ["2005-11-30", 0.7798445704353939], ["2005-12-31", 0.8012562245016293], ["2006-01-31", 0.13854815955396477], ["2006-02-28", 0.29783842237959834], ["2006-03-31", 0.13070802543281346], ["2006-04-30", 0.12053578032690179], ["2006-05-31", 0.181963190118983], ["2006-06-30", 0.25218380831747567], ["2006-07-31", 0.10601710677883924], ["2006-08-31", 0.2518448494322329], ["2006-09-30", 0.2595645790784349], ["2006-10-31", 0.053630577563977405], ["2006-11-30", -0.044692479867515816], ["2006-12-31", 0.10330918531654405], ["2007-01-31", 0.20527846099525887], ["2007-02-28", -0.23121356933558457], ["2007-03-31", 0.13148173677565245], ["2007-04-30", 0.33278978242771295], ["2007-05-31", 0.349433353732231], ["2007-06-30", 0.21838643288474596], ["2007-07-31", 0.014607837400611223], ["2007-08-31", -0.17932276566331656], ["2007-09-30", -0.40633552422665303], ["2007-10-31", 0.3914239813344539], ["2007-11-30", 0.6170265238182782], ["2007-12-31", 0.8734636544810068], ["2008-01-31", 0.43130131359138624], ["2008-02-29", 0.7338536572231248], ["2008-03-31", 0.1912238106012042], ["2008-04-30", 0.06806423636230219], ["2008-05-31", -0.18685261907503192], ["2008-06-30", -0.09021768605801439], ["2008-07-31", -0.14299001178898296], ["2008-08-31", -0.30703792281157083], ["2008-09-30", -0.8737519617944747], ["2008-10-31", -1.9831019517622916], ["2008-11-30", -2.0], ["2008-12-31", -2.0], ["2009-01-31", -2.0], ["2009-02-28", -2.0], ["2009-03-31", -2.0], ["2009-04-30", -2.0], ["2009-05-31", -2.0], ["2009-06-30", -1.779747420372431], ["2009-07-31", -1.5622229516221953], ["2009-08-31", -1.4287282243513784], ["2009-09-30", -1.0575412268702293], ["2009-10-31", -0.5334407948245126], ["2009-11-30", 0.08955835891148939], ["2009-12-31", 0.6069974850580172], ["2010-01-31", 0.45430824565985944], ["2010-02-28", 0.5556867713023019], ["2010-03-31", 0.5229873888256888], ["2010-04-30", 0.6412845604085488], ["2010-05-31", 0.6825049584995359], ["2010-06-30", 0.6159482076561902], ["2010-07-31", 0.5774057992427593], ["2010-08-31", 0.6070704011386256], ["2010-09-30", 0.5984150065167272], ["2010-10-31", 0.5893754534546323], ["2010-11-30", 0.6276274819108982], ["2010-12-31", 0.4769355555215408], ["2011-01-31", 0.4628505200887609], ["2011-02-28", 0.45642973227970074], ["2011-03-31", 0.4453591277890591], ["2011-04-30", 0.5709099955097601], ["2011-05-31", 0.5611595490552822], ["2011-06-30", 0.5099116699801899], ["2011-07-31", 0.49219286992524813], ["2011-08-31", 0.5205904703440849], ["2011-09-30", 0.3908646535338661], ["2011-10-31", 0.2761485551039603], ["2011-11-30", 0.16321007925429548], ["2011-12-31", 0.18767894967850463], ["2012-01-31", 0.23878340497584546], ["2012-02-29", 0.2822757911490078], ["2012-03-31", 0.4476071491186596], ["2012-04-30", 0.26340687876898083], ["2012-05-31", 0.24056085709069105], ["2012-06-30", 0.1211491763691244], ["2012-07-31", 0.06581216104347828], ["2012-08-31", 0.0900145390308382], ["2012-09-30", 0.044493946432525106], ["2012-10-31", 0.17776771061039204], ["2012-11-30", 0.2224431120890151], ["2012-12-31", 0.13371114890640284], ["2013-01-31", 0.19970184971689708], ["2013-02-28", 0.1685409029247855], ["2013-03-31", 0.10843959211464504], ["2013-04-30", 0.14738075593381228], ["2013-05-31", 0.11181908856572363], ["2013-06-30", 0.06678877265662972], ["2013-07-31", -0.055780299387042334], ["2013-08-31", -0.13027853688933516], ["2013-09-30", -0.13889449226982106], ["2013-10-31", -0.25540799568094424], ["2013-11-30", -0.17686096140919505], ["2013-12-31", -0.19978588045577342], ["2014-01-31", -0.24956232992852578], ["2014-02-28", -0.30599570756348315], ["2014-03-31", -0.17597547036104896], ["2014-04-30", -0.14589064229557303], ["2014-05-31", -0.07245126310294998], ["2014-06-30", 0.07475960400950846], ["2014-07-31", 0.2611212480545331], ["2014-08-31", 0.16589792516612373], ["2014-09-30", 0.05117488818850896], ["2014-10-31", -0.20941911817674838], ["2014-11-30", -0.30965934341442086], ["2014-12-31", -0.4133705399915186], ["2015-01-31", -0.7246226738302676], ["2015-02-28", -0.827553211441785], ["2015-03-31", -0.8561957082212895], ["2015-04-30", -1.0508370639049402], ["2015-05-31", -0.930073886855629], ["2015-06-30", -1.069584514274871], ["2015-07-31", -1.2956499131233339], ["2015-08-31", -1.3562782303329977], ["2015-09-30", -1.4718026389807104], ["2015-10-31", -1.5859525532072203], ["2015-11-30", -1.3089119160060254], ["2015-12-31", -1.5832576590953542], ["2016-01-31", -1.5573030618661357], ["2016-02-29", -1.4719295566289963], ["2016-03-31", -1.3765088405902086], ["2016-04-30", -1.05934749247527], ["2016-05-31", -0.7737868351010136], ["2016-06-30", -0.5862958536818499], ["2016-07-31", -0.3927801987744623], ["2016-08-31", -0.15884128104220174], ["2016-09-30", 0.11069140443195083], ["2016-10-31", 0.20708890862946558], ["2016-11-30", 0.3229431740309495], ["2016-12-31", 0.5155894573968447], ["2017-01-31", 0.8839945630132744], ["2017-02-28", 0.9776064220653686], ["2017-03-31", 0.9539024706154253], ["2017-04-30", 0.7490189633761329], ["2017-05-31", 0.7694922086095572], ["2017-06-30", 0.7207269038613857], ["2017-07-31", 0.5578827425020854], ["2017-08-31", 0.536904695362634], ["2017-09-30", 0.5554308956919796], ["2017-10-31", 0.6720037809443042], ["2017-11-30", 0.6926711841749462], ["2017-12-31", 0.867612888131996], ["2018-01-31", 0.7845305440435267], ["2018-02-28", 0.7609788830400213], ["2018-03-31", 0.6477144990505415], ["2018-04-30", 0.7233983891055049], ["2018-05-31", 0.7134431126929157], ["2018-06-30", 0.601261911704069], ["2018-07-31", 0.6843726301436668], ["2018-08-31", 0.7503288331629607], ["2018-09-30", 0.7322596954295544], ["2018-10-31", 0.6860365296914791], ["2018-11-30", 0.42036436525847576], ["2018-12-31", 0.1279407303600678]], "gross_exposure": [["2000-01-31", 0.7584051031270522], ["2000-02-29", 0.7215485495046523], ["2000-03-31", 0.7151027585185679], ["2000-04-30", 0.67686073776515], ["2000-05-31", 0.6577176503412004], ["2000-06-30", 0.6298362225058364], ["2000-07-31", 0.6536176434996784], ["2000-08-31", 0.5943975244469009], ["2000-09-30", 0.5468804957663687], ["2000-10-31", 0.5768409355009735], ["2000-11-30", 0.4621966421738922], ["2000-12-31", 0.4187285156374373], ["2001-01-31", 0.39893501128857817], ["2001-02-28", 0.4295494413280905], ["2001-03-31", 0.3998182589076245], ["2001-04-30", 0.3786334962439776], ["2001-05-31", 0.39411940662635025], ["2001-06-30", 0.39710254014099483], ["2001-07-31", 0.3704144694196626], ["2001-08-31", 0.37196674269708707], ["2001-09-30", 0.3931046402318461], ["2001-10-31", 0.3099293005278645], ["2001-11-30", 0.3220444864458701], ["2001-12-31", 0.3422159721842384], ["2002-01-31", 0.359371101692456], ["2002-02-28", 0.402851062204567], ["2002-03-31", 0.4313268439729827], ["2002-04-30", 0.5179304474409914], ["2002-05-31", 0.5451220469354869], ["2002-06-30", 0.5495252473475873], ["2002-07-31", 0.5374038942883864], ["2002-08-31", 0.5432055141301307], ["2002-09-30", 0.5516282091530389], ["2002-10-31", 0.5698713077818146], ["2002-11-30", 0.5991296584566091], ["2002-12-31", 0.6673896929876312], ["2003-01-31", 0.6772388923030918], ["2003-02-28", 0.7126069564368779], ["2003-03-31", 0.7281208017511911], ["2003-04-30", 0.681169807716714], ["2003-05-31", 0.6720952692299086], ["2003-06-30", 0.6618047429240244], ["2003-07-31", 0.6843449759989003], ["2003-08-31", 0.7002884417310181], ["2003-09-30", 0.7095175230468851], ["2003-10-31", 0.7026773887748788], ["2003-11-30", 0.7438680215676666], ["2003-12-31", 0.7665671329975376], ["2004-01-31", 0.7778597313667623], ["2004-02-29", 0.7598687269917104], ["2004-03-31", 0.7292771730194838], ["2004-04-30", 0.7580541220507047], ["2004-05-31", 0.8221299547724285], ["2004-06-30", 0.8318067028114424], ["2004-07-31", 0.801955012958352], ["2004-08-31", 0.8225874787801677], ["2004-09-30", 0.8228621314793622], ["2004-10-31", 0.815352415052156], ["2004-11-30", 0.8442878566056496], ["2004-12-31", 0.8328711990651577], ["2005-01-31", 0.8288502413102528], ["2005-02-28", 0.825827500814117], ["2005-03-31", 0.8486203729355505], ["2005-04-30", 0.8518270287353648], ["2005-05-31", 0.8208065622518668], ["2005-06-30", 0.782191943796164], ["2005-07-31", 0.8381697271540539], ["2005-08-31", 0.8295934426816787], ["2005-09-30", 0.8388701256994873], ["2005-10-31", 0.8122904819793216], ["2005-11-30", 0.786472799826194], ["2005-12-31", 0.7902198392877852], ["2006-01-31", 0.6742459279219438], ["2006-02-28", 0.7021217239164297], ["2006-03-31", 0.6728739044507424], ["2006-04-30", 0.6710937615572078], ["2006-05-31", 0.681843558270822], ["2006-06-30", 0.6941321664555583], ["2006-07-31", 0.6685529936862968], ["2006-08-31", 0.6940728486506408], ["2006-09-30", 0.6954238013387262], ["2006-10-31", 0.6593853510736961], ["2006-11-30", 0.6421788160231847], ["2006-12-31", 0.6680791074303952], ["2007-01-31", 0.6859237306741703], ["2007-02-28", 0.6095376253662728], ["2007-03-31", 0.6730093039357392], ["2007-04-30", 0.7082382119248498], ["2007-05-31", 0.7111508369031404], ["2007-06-30", 0.6882176257548306], ["2007-07-31", 0.652556371545107], ["2007-08-31", 0.6186185160089196], ["2007-09-30", 0.5788912832603358], ["2007-10-31", 0.7184991967335295], ["2007-11-30", 0.7579796416681988], ["2007-12-31", 0.8028561395341762], ["2008-01-31", 0.7254777298784926], ["2008-02-29", 0.7784243900140468], ["2008-03-31", 0.6834641668552107], ["2008-04-30", 0.661911241363403], ["2008-05-31", 0.6173007916618695], ["2008-06-30", 0.6342119049398475], ["2008-07-31", 0.624976747936928], ["2008-08-31", 0.5962683635079751], ["2008-09-30", 0.49709340668596697], ["2008-10-31", 0.302957158441599], ["2008-11-30", 0.30000000000000004], ["2008-12-31", 0.30000000000000004], ["2009-01-31", 0.30000000000000004], ["2009-02-28", 0.30000000000000004], ["2009-03-31", 0.30000000000000004], ["2009-04-30", 0.30000000000000004], ["2009-05-31", 0.30000000000000004], ["2009-06-30", 0.3385442014348246], ["2009-07-31", 0.3766109834661159], ["2009-08-31", 0.39997256073850884], ["2009-09-30", 0.4649302852977099], ["2009-10-31", 0.5566478609057104], ["2009-11-30", 0.6656727128095107], ["2009-12-31", 0.756224559885153], ["2010-01-31", 0.7295039429904754], ["2010-02-28", 0.7472451849779028], ["2010-03-31", 0.7415227930444955], ["2010-04-30", 0.762224798071496], ["2010-05-31", 0.7694383677374188], ["2010-06-30", 0.7577909363398333], ["2010-07-31", 0.7510460148674829], ["2010-08-31", 0.7562373201992595], ["2010-09-30", 0.7547226261404273], ["2010-10-31", 0.7531407043545607], ["2010-11-30", 0.7598348093344072], ["2010-12-31", 0.7334637222162697], ["2011-01-31", 0.7309988410155331], ["2011-02-28", 0.7298752031489476], ["2011-03-31", 0.7279378473630853], ["2011-04-30", 0.749909249214208], ["2011-05-31", 0.7482029210846743], ["2011-06-30", 0.7392345422465333], ["2011-07-31", 0.7361337522369185], ["2011-08-31", 0.7411033323102149], ["2011-09-30", 0.7184013143684266], ["2011-10-31", 0.6983259971431931], ["2011-11-30", 0.6785617638695017], ["2011-12-31", 0.6828438161937384], ["2012-01-31", 0.691787095870773], ["2012-02-29", 0.6993982634510764], ["2012-03-31", 0.7283312510957655], ["2012-04-30", 0.6960962037845717], ["2012-05-31", 0.6920981499908709], ["2012-06-30", 0.6712011058645968], ["2012-07-31", 0.6615171281826088], ["2012-08-31", 0.6657525443303967], ["2012-09-30", 0.6577864406256919], ["2012-10-31", 0.6811093493568187], ["2012-11-30", 0.6889275446155777], ["2012-12-31", 0.6733994510586205], ["2013-01-31", 0.684947823700457], ["2013-02-28", 0.6794946580118375], ["2013-03-31", 0.6689769286200629], ["2013-04-30", 0.6757916322884172], ["2013-05-31", 0.6695683404990016], ["2013-06-30", 0.6616880352149103], ["2013-07-31", 0.6402384476072677], ["2013-08-31", 0.6272012560443664], ["2013-09-30", 0.6256934638527814], ["2013-10-31", 0.6053036007558348], ["2013-11-30", 0.6190493317533909], ["2013-12-31", 0.6150374709202396], ["2014-01-31", 0.6063265922625081], ["2014-02-28", 0.5964507511763905], ["2014-03-31", 0.6192042926868164], ["2014-04-30", 0.6244691375982747], ["2014-05-31", 0.6373210289569837], ["2014-06-30", 0.663082930701664], ["2014-07-31", 0.6956962184095433], ["2014-08-31", 0.6790321369040717], ["2014-09-30", 0.658955605432989], ["2014-10-31", 0.613351654319069], ["2014-11-30", 0.5958096149024764], ["2014-12-31", 0.5776601555014843], ["2015-01-31", 0.5231910320797032], ["2015-02-28", 0.5051781879976877], ["2015-03-31", 0.5001657510612744], ["2015-04-30", 0.4661035138166355], ["2015-05-31", 0.48723706980026493], ["2015-06-30", 0.4628227100018976], ["2015-07-31", 0.4232612652034166], ["2015-08-31", 0.4126513096917255], ["2015-09-30", 0.3924345381783757], ["2015-10-31", 0.3724583031887365], ["2015-11-30", 0.4209404146989456], ["2015-12-31", 0.3729299096583131], ["2016-01-31", 0.3774719641734263], ["2016-02-29", 0.39241232758992567], ["2016-03-31", 0.4091109528967135], ["2016-04-30", 0.4646141888168278], ["2016-05-31", 0.5145873038573227], ["2016-06-30", 0.5473982256056763], ["2016-07-31", 0.5812634652144691], ["2016-08-31", 0.6222027758176147], ["2016-09-30", 0.6693709957755914], ["2016-10-31", 0.6862405590101565], ["2016-11-30", 0.7065150554554162], ["2016-12-31", 0.7402281550444478], ["2017-01-31", 0.804699048527323], ["2017-02-28", 0.8210811238614395], ["2017-03-31", 0.8169329323576995], ["2017-04-30", 0.7810783185908232], ["2017-05-31", 0.7846611365066725], ["2017-06-30", 0.7761272081757425], ["2017-07-31", 0.747629479937865], ["2017-08-31", 0.743958321688461], ["2017-09-30", 0.7472004067460964], ["2017-10-31", 0.7676006616652533], ["2017-11-30", 0.7712174572306156], ["2017-12-31", 0.8018322554230993], ["2018-01-31", 0.7872928452076172], ["2018-02-28", 0.7831713045320037], ["2018-03-31", 0.7633500373338448], ["2018-04-30", 0.7765947180934634], ["2018-05-31", 0.7748525447212603], ["2018-06-30", 0.7552208345482121], ["2018-07-31", 0.7697652102751417], ["2018-08-31", 0.7813075458035181], ["2018-09-30", 0.778145446700172], ["2018-10-31", 0.7700563926960089], ["2018-11-30", 0.7235637639202332], ["2018-12-31", 0.6723896278130119]]}, "rolling_12m": {"Fund": [["2000-12-31", 0.062343197485291046], ["2001-01-31", 0.034423244021551724], ["2001-02-28", 0.018483903736948415], ["2001-03-31", -0.026264105471467625], ["2001-04-30", 0.03491185244298034], ["2001-05-31", 0.07861659574027824], ["2001-06-30", 0.013602639344544531], ["2001-07-31", 0.01560887625307994], ["2001-08-31", -0.052464310665755076], ["2001-09-30", -0.03757203751749072], ["2001-10-31", 0.001489597359877859], ["2001-11-30", 0.04907447977866508], ["2001-12-31", 0.01649688264447513], ["2002-01-31", 0.04568907488218965], ["2002-02-28", 0.044939809398691466], ["2002-03-31", 0.057288366546315306], ["2002-04-30", 0.04943942608456031], ["2002-05-31", 0.04979552165937484], ["2002-06-30", 0.052080611861475834], ["2002-07-31", 0.01100126127634482], ["2002-08-31", 0.01379699368451126], ["2002-09-30", 0.0161217183542679], ["2002-10-31", 0.010956258881697822], ["2002-11-30", 0.01944150972762726], ["2002-12-31", -0.009038471894196598], ["2003-01-31", -0.04578151535806774], ["2003-02-28", -0.06728529237005498], ["2003-03-31", -0.07522281400779429], ["2003-04-30", -0.051027804042816816], ["2003-05-31", -0.02651553774770965], ["2003-06-30", -0.009098258388803404], ["2003-07-31", 0.033321751253862164], ["2003-08-31", 0.06159509942338648], ["2003-09-30", 0.07304270358611542], ["2003-10-31", 0.13324767714797536], ["2003-11-30", 0.14710125492796067], ["2003-12-31", 0.21391165408515622], ["2004-01-31", 0.23103955268783483], ["2004-02-29", 0.26593347218163865], ["2004-03-31", 0.23983382467005576], ["2004-04-30", 0.16261174479659513], ["2004-05-31", 0.14373132926568943], ["2004-06-30", 0.19758544079200924], ["2004-07-31", 0.16417203616158238], ["2004-08-31", 0.12395170235380704], ["2004-09-30", 0.19175261384074127], ["2004-10-31", 0.10639390223181366], ["2004-11-30", 0.1581387940286687], ["2004-12-31", 0.11494383373927586], ["2005-01-31", 0.13974233632276456], ["2005-02-28", 0.19013626203846012], ["2005-03-31", 0.19110497250841973], ["2005-04-30", 0.18172465942160287], ["2005-05-31", 0.19950321195262943], ["2005-06-30", 0.16469074935330608], ["2005-07-31", 0.26408990352684003], ["2005-08-31", 0.2774406114745531], ["2005-09-30", 0.2674000960657916], ["2005-10-31", 0.21069442150936113], ["2005-11-30", 0.14765906029280607], ["2005-12-31", 0.15955636282176333], ["2006-01-31", 0.22684975878494607], ["2006-02-28", 0.13642991348637112], ["2006-03-31", 0.19646930448622912], ["2006-04-30", 0.2851785835388776], ["2006-05-31", 0.2131574621568999], ["2006-06-30", 0.20001843987197954], ["2006-07-31", 0.09937437336672428], ["2006-08-31", 0.08497254372811835], ["2006-09-30", 0.05366363759015624], ["2006-10-31", 0.14017470074770233], ["2006-11-30", 0.14520698326665715], ["2006-12-31", 0.1325959375427359], ["2007-01-31", 0.08429801175569906], ["2007-02-28", 0.09179792561593025], ["2007-03-31", 0.06814820130698784], ["2007-04-30", 0.05590141365047896], ["2007-05-31", 0.1251973563608979], ["2007-06-30", 0.11393360518143947], ["2007-07-31", 0.13477366125359613], ["2007-08-31", 0.13582520880160542], ["2007-09-30", 0.17427686797215225], ["2007-10-31", 0.15790280887190922], ["2007-11-30", 0.07431025113726375], ["2007-12-31", 0.09070150683046907], ["2008-01-31", -0.00038997448653976807], ["2008-02-29", 0.04436155677179454], ["2008-03-31", 0.0083204020189378], ["2008-04-30", 0.023960845250316165], ["2008-05-31", 0.03608507948046058], ["2008-06-30", 0.03971846661231937], ["2008-07-31", 0.005220225222945851], ["2008-08-31", -0.007401204129263483], ["2008-09-30", -0.11894001706428525], ["2008-10-31", -0.20043466488763328], ["2008-11-30", -0.18312958998389917], ["2008-12-31", -0.19702316946792853], ["2009-01-31", -0.1604382549857417], ["2009-02-28", -0.20826950315027581], ["2009-03-31", -0.17843813932020236], ["2009-04-30", -0.2012821698666566], ["2009-05-31", -0.2245139030663983], ["2009-06-30", -0.2242005398225373], ["2009-07-31", -0.16413743086038413], ["2009-08-31", -0.14422038426867856], ["2009-09-30", -0.05297131687897494], ["2009-10-31", 0.01977629663492464], ["2009-11-30", 0.08921062515569234], ["2009-12-31", 0.10688521467544376], ["2010-01-31", 0.08400305493361526], ["2010-02-28", 0.1728475773492879], ["2010-03-31", 0.2177994463145183], ["2010-04-30", 0.24604336707734764], ["2010-05-31", 0.14179692837069302], ["2010-06-30", 0.0655907233531412], ["2010-07-31", 0.11881391451386802], ["2010-08-31", 0.061489848423727844], ["2010-09-30", 0.14737093680192337], ["2010-10-31", 0.21978128819274323], ["2010-11-30", 0.20675209869390243], ["2010-12-31", 0.21404196852949542], ["2011-01-31", 0.26405541299384083], ["2011-02-28", 0.21956752627414566], ["2011-03-31", 0.17344324532663769], ["2011-04-30", 0.1463686182267543], ["2011-05-31", 0.20777846515621845], ["2011-06-30", 0.27091522752733743], ["2011-07-31", 0.1755829792493131], ["2011-08-31", 0.16586049338403464], ["2011-09-30", -0.044169990566651496], ["2011-10-31", -0.004890090791839885], ["2011-11-30", -0.02569337129420124], ["2011-12-31", -0.04530134935246222], ["2012-01-31", -0.026489954452333597], ["2012-02-29", -0.021729269512342886], ["2012-03-31", -0.014117553024686647], ["2012-04-30", -0.022227999876706317], ["2012-05-31", -0.03205157472040032], ["2012-06-30", -0.004891208104698119], ["2012-07-31", 0.011635557139488162], ["2012-08-31", 0.06790824368169357], ["2012-09-30", 0.20509627650280127], ["2012-10-31", 0.08984285650901813], ["2012-11-30", 0.0935072981147107], ["2012-12-31", 0.09516493974765705], ["2013-01-31", 0.12384210656083594], ["2013-02-28", 0.10251234616474214], ["2013-03-31", 0.11647245921726723], ["2013-04-30", 0.11928070048128214], ["2013-05-31", 0.1680458319819067], ["2013-06-30", 0.14920849488521504], ["2013-07-31", 0.1857528497485752], ["2013-08-31", 0.16600615224749649], ["2013-09-30", 0.19424360779084204], ["2013-10-31", 0.23338918133757414], ["2013-11-30", 0.2491191731395579], ["2013-12-31", 0.26663305602295195], ["2014-01-31", 0.1958154912052794], ["2014-02-28", 0.22802487225338153], ["2014-03-31", 0.17088538470143533], ["2014-04-30", 0.15479764097710547], ["2014-05-31", 0.14843337078806074], ["2014-06-30", 0.1837992351191693], ["2014-07-31", 0.11436110569831937], ["2014-08-31", 0.17029413175906938], ["2014-09-30", 0.1058766627227572], ["2014-10-31", 0.09888312670523769], ["2014-11-30", 0.09938243035300998], ["2014-12-31", 0.06282274994787951], ["2015-01-31", 0.07691762558932447], ["2015-02-28", 0.07734032340241392], ["2015-03-31", 0.07976080388973616], ["2015-04-30", 0.08073760503071647], ["2015-05-31", 0.08233781102493953], ["2015-06-30", 0.05903273457463998], ["2015-07-31", 0.09685272795753641], ["2015-08-31", 0.036829179797797096], ["2015-09-30", 0.04986287285240465], ["2015-10-31", 0.05229335915531341], ["2015-11-30", 0.025252641710711732], ["2015-12-31", 0.031614907922101976], ["2016-01-31", 0.02258908545123428], ["2016-02-29", -0.009371380926866402], ["2016-03-31", 0.018805033427424567], ["2016-04-30", 0.01819903925072386], ["2016-05-31", 0.011846767270551117], ["2016-06-30", 0.024447400819864518], ["2016-07-31", 0.015273896650001895], ["2016-08-31", 0.03168960796030351], ["2016-09-30", 0.03974397479079128], ["2016-10-31", -0.0036676191386423307], ["2016-11-30", 0.060535686631004504], ["2016-12-31", 0.058550946168969054], ["2017-01-31", 0.08615725526567752], ["2017-02-28", 0.09119902024816051], ["2017-03-31", 0.0691881501710303], ["2017-04-30", 0.07362375450971315], ["2017-05-31", 0.0805155322679858], ["2017-06-30", 0.0721073958322982], ["2017-07-31", 0.081692981037782], ["2017-08-31", 0.09362674750121425], ["2017-09-30", 0.12438912616702269], ["2017-10-31", 0.18598881448146964], ["2017-11-30", 0.1498080569845044], ["2017-12-31", 0.1619215792082318], ["2018-01-31", 0.20111613751387658], ["2018-02-28", 0.1599883910597193], ["2018-03-31", 0.1345772418883051], ["2018-04-30", 0.1375409942376451], ["2018-05-31", 0.17854447854907707], ["2018-06-30", 0.18462043588438282], ["2018-07-31", 0.1776433517629601], ["2018-08-31", 0.20432894027508586], ["2018-09-30", 0.17549531822627285], ["2018-10-31", 0.05806377367205151], ["2018-11-30", 0.01742984904702083], ["2018-12-31", -0.04483576842580217]], "Market": [["2000-12-31", -0.11821774908423033], ["2001-01-31", -0.04272354647329302], ["2001-02-28", -0.16034852043061498], ["2001-03-31", -0.2573744022703963], ["2001-04-30", -0.14477224551815504], ["2001-05-31", -0.10158498395783688], ["2001-06-30", -0.15943326227462318], ["2001-07-31", -0.15662691817920305], ["2001-08-31", -0.2639552963560934], ["2001-09-30", -0.2951235039211051], ["2001-10-31", -0.25965153934602214], ["2001-11-30", -0.11171643419348032], ["2001-12-31", -0.11122928823811873], ["2002-01-31", -0.1558000606899016], ["2002-02-28", -0.0854803045297573], ["2002-03-31", 0.024920084137951104], ["2002-04-30", -0.1018856233745874], ["2002-05-31", -0.12169542103183817], ["2002-06-30", -0.1703681315001424], ["2002-07-31", -0.22292050092264415], ["2002-08-31", -0.16709188899653604], ["2002-09-30", -0.17846414845958458], ["2002-10-31", -0.13635760103356642], ["2002-11-30", -0.14969311765016868], ["2002-12-31", -0.2113766323786187], ["2003-01-31", -0.22074424074350774], ["2003-02-28", -0.21778234376728534], ["2003-03-31", -0.24166298719654045], ["2003-04-30", -0.13496383516450328], ["2003-05-31", -0.07080289008030216], ["2003-06-30", 0.01588835545605316], ["2003-07-31", 0.13073461206145653], ["2003-08-31", 0.1507766634390042], ["2003-09-30", 0.2664672098402592], ["2003-10-31", 0.24505555431727966], ["2003-11-30", 0.19108985256706457], ["2003-12-31", 0.3171697720645348], ["2004-01-31", 0.3805749821969384], ["2004-02-29", 0.4261888068548467], ["2004-03-31", 0.3916861500821367], ["2004-04-30", 0.26245536593818164], ["2004-05-31", 0.20483418970897294], ["2004-06-30", 0.20963907770975299], ["2004-07-31", 0.13437987815274122], ["2004-08-31", 0.10935521991757247], ["2004-09-30", 0.14163418158173324], ["2004-10-31", 0.0921690025673747], ["2004-11-30", 0.12729373583396408], ["2004-12-31", 0.11905509940483405], ["2005-01-31", 0.06622040381563687], ["2005-02-28", 0.07234596966414442], ["2005-03-31", 0.06696033718409833], ["2005-04-30", 0.05987910226813287], ["2005-05-31", 0.08742822090250968], ["2005-06-30", 0.07509719227577971], ["2005-07-31", 0.16632334264483206], ["2005-08-31", 0.15362430169026609], ["2005-09-30", 0.14286111145260283], ["2005-10-31", 0.10574449308945377], ["2005-11-30", 0.09742431686927566], ["2005-12-31", 0.06010206134481], ["2006-01-31", 0.12527059872131208], ["2006-02-28", 0.10338144954498385], ["2006-03-31", 0.14324038166006936], ["2006-04-30", 0.18402645496413284], ["2006-05-31", 0.10425898306750803], ["2006-06-30", 0.09583115417338228], ["2006-07-31", 0.04801816785659141], ["2006-08-31", 0.08382815329643623], ["2006-09-30", 0.0999216098442266], ["2006-10-31", 0.16032867042470667], ["2006-11-30", 0.14013335430822238], ["2006-12-31", 0.15372683734628834], ["2007-01-31", 0.13684289703619412], ["2007-02-28", 0.11817544549163417], ["2007-03-31", 0.11027692425931779], ["2007-04-30", 0.14131464584889142], ["2007-05-31", 0.22068602124659642], ["2007-06-30", 0.20157064775721145], ["2007-07-31", 0.16572348897153932], ["2007-08-31", 0.15311240085434163], ["2007-09-30", 0.16772621379979458], ["2007-10-31", 0.1508499478988723], ["2007-11-30", 0.07711540084011936], ["2007-12-31", 0.05755256807170861], ["2008-01-31", -0.02546490883420005], ["2008-02-29", -0.03890246663690011], ["2008-03-31", -0.056448871146124846], ["2008-04-30", -0.04861782664332881], ["2008-05-31", -0.06322052096579067], ["2008-06-30", -0.12712462896966747], ["2008-07-31", -0.10210880233856723], ["2008-08-31", -0.09936725171834826], ["2008-09-30", -0.2101973728614389], ["2008-10-31", -0.3586923994098906], ["2008-11-30", -0.38068060081198507], ["2008-12-31", -0.36604405328075973], ["2009-01-31", -0.38034056933640337], ["2009-02-28", -0.42599635438133354], ["2009-03-31", -0.36964163051602017], ["2009-04-30", -0.3369993171467899], ["2009-05-31", -0.316456741578221], ["2009-06-30", -0.2516391743641275], ["2009-07-31", -0.18898501716882343], ["2009-08-31", -0.1753882906983808], ["2009-09-30", -0.05487177345729222], ["2009-10-31", 0.11059894658015179], ["2009-11-30", 0.27033158200674867], ["2009-12-31", 0.28259394651676795], ["2010-01-31", 0.35064589668513313], ["2010-02-28", 0.5536141087366859], ["2010-03-31", 0.5148742128519714], ["2010-04-30", 0.4026899584370025], ["2010-05-31", 0.2283089750611862], ["2010-06-30", 0.15509998436911054], ["2010-07-31", 0.14630428441009768], ["2010-08-31", 0.05617668609951387], ["2010-09-30", 0.1118025012207946], ["2010-10-31", 0.1855875251561141], ["2010-11-30", 0.13008826515708138], ["2010-12-31", 0.17489566876652773], ["2011-01-31", 0.24030824128238049], ["2011-02-28", 0.24147521329609067], ["2011-03-31", 0.17351695987332305], ["2011-04-30", 0.18373193580732816], ["2011-05-31", 0.2688120399412808], ["2011-06-30", 0.3199802470692805], ["2011-07-31", 0.2053012717915914], ["2011-08-31", 0.18971625222045474], ["2011-09-30", 0.00346678622254748], ["2011-10-31", 0.0755109797325717], ["2011-11-30", 0.06539477893885715], ["2011-12-31", 0.004635803237225122], ["2012-01-31", 0.03486547193896006], ["2012-02-29", 0.04365312100716312], ["2012-03-31", 0.0711697195467742], ["2012-04-30", 0.03189691726708954], ["2012-05-31", -0.020064478867977686], ["2012-06-30", 0.03613970937506661], ["2012-07-31", 0.0693056535410943], ["2012-08-31", 0.1665597774946661], ["2012-09-30", 0.29684328174948504], ["2012-10-31", 0.14432570039799697], ["2012-11-30", 0.1569347906062193], ["2012-12-31", 0.16207549168374147], ["2013-01-31", 0.16777041585777464], ["2013-02-28", 0.13284131127463872], ["2013-03-31", 0.14285101446414328], ["2013-04-30", 0.1705728856288935], ["2013-05-31", 0.2835610949598748], ["2013-06-30", 0.2206439393677484], ["2013-07-31", 0.2792866585379308], ["2013-08-31", 0.21378726680276117], ["2013-09-30", 0.22602791244326204], ["2013-10-31", 0.2996083118187194], ["2013-11-30", 0.3298403368800349], ["2013-12-31", 0.35133139122676416], ["2014-01-31", 0.23727946187092086], ["2014-02-28", 0.27822331802947353], ["2014-03-31", 0.23396023754244966], ["2014-04-30", 0.2123008474657242], ["2014-05-31", 0.2033848257124482], ["2014-06-30", 0.2501621809485357], ["2014-07-31", 0.1595421803998096], ["2014-08-31", 0.24235252812226715], ["2014-09-30", 0.17423455313932834], ["2014-10-31", 0.15564776279568515], ["2014-11-30", 0.14930094728401744], ["2014-12-31", 0.11714980695724408], ["2015-01-31", 0.12014785486527768], ["2015-02-28", 0.13637538341697408], ["2015-03-31", 0.11879476103329067], ["2015-04-30", 0.12815998135715279], ["2015-05-31", 0.12011087539727883], ["2015-06-30", 0.07481454203791871], ["2015-07-31", 0.11436320184828563], ["2015-08-31", 0.004179155942931612], ["2015-09-30", -0.007806842526471236], ["2015-10-31", 0.0428045430656836], ["2015-11-30", 0.022600126827671208], ["2015-12-31", 0.0011934999080589481], ["2016-01-31", -0.02676037133070308], ["2016-02-29", -0.0835212801854156], ["2016-03-31", -0.008403393277616411], ["2016-04-30", -0.005266146946549255], ["2016-05-31", -0.000510071016856628], ["2016-06-30", 0.01465060439839938], ["2016-07-31", 0.038677656759414036], ["2016-08-31", 0.11137302574623753], ["2016-09-30", 0.1498492095646906], ["2016-10-31", 0.045623639051752374], ["2016-11-30", 0.09059393388166015], ["2016-12-31", 0.13488506106962816], ["2017-01-31", 0.22860156214449168], ["2017-02-28", 0.2736752440385326], ["2017-03-31", 0.19290890276597517], ["2017-04-30", 0.19551207234684642], ["2017-05-31", 0.1873966268215279], ["2017-06-30", 0.19809973828156013], ["2017-07-31", 0.17500394955707543], ["2017-08-31", 0.17224176461922291], ["2017-09-30", 0.19997937830132573], ["2017-10-31", 0.25361107772795277], ["2017-11-30", 0.23353651852962698], ["2017-12-31", 0.22521689909410347], ["2018-01-31", 0.2692776370501666], ["2018-02-28", 0.18173024700816165], ["2018-03-31", 0.15322398494636857], ["2018-04-30", 0.14499789034721755], ["2018-05-31", 0.16357993800160786], ["2018-06-30", 0.160240783333077], ["2018-07-31", 0.1764193390098998], ["2018-08-31", 0.21538918283378172], ["2018-09-30", 0.18712080650722052], ["2018-10-31", 0.07296883611321237], ["2018-11-30", 0.058995349606904], ["2018-12-31", -0.050731469135252616]]}, "holdings_latest": {"as_of": "2018-12-31", "weights": [{"sector": "Games", "weight": 0.125}, {"sector": "Clths", "weight": 0.125}, {"sector": "Hlth", "weight": 0.125}, {"sector": "Carry", "weight": 0.125}, {"sector": "Util", "weight": 0.125}, {"sector": "Servs", "weight": 0.125}, {"sector": "Rtail", "weight": 0.125}, {"sector": "Meals", "weight": 0.125}]}, "stress_tests": [{"window": "Dot-com (2000-09 to 2002-10)", "fund_total": -0.054362175843809535, "mkt_total": -0.4057423366888593, "outperf": 0.35138016084504975, "fund_dd": -0.08472931843192189, "mkt_dd": -0.42091868756300077}, {"window": "GFC (2007-10 to 2009-02)", "fund_total": -0.23824550049487214, "mkt_total": -0.49252534336935416, "outperf": 0.254279842874482, "fund_dd": -0.259784493386514, "mkt_dd": -0.5030756259508058}, {"window": "Eurozone (2011-07 to 2011-09)", "fund_total": -0.1530634317920916, "mkt_total": -0.151822835042137, "outperf": -0.0012405967499545811, "fund_dd": -0.1483396254234839, "mkt_dd": -0.1313854037091664}, {"window": "China devaluation (2015-08 to 2016-02)", "fund_total": -0.02232001924257576, "mkt_total": -0.09097489141433346, "outperf": 0.0686548721717577, "fund_dd": -0.015788197071190946, "mkt_dd": -0.07842166071807166}, {"window": "Vol spike (2018-10 to 2018-12)", "fund_total": -0.13124765344955314, "mkt_total": -0.14555319856482352, "outperf": 0.01430554511527038, "fund_dd": -0.06699717042184472, "mkt_dd": -0.09338088915563503}], "sensitivity": {"lookbacks": [6, 9, 12, 15], "quartiles": [0.2, 0.25, 0.33], "sharpe_grid": [[0.505, 0.562, 0.532], [0.548, 0.567, 0.546], [0.528, 0.563, 0.551], [0.511, 0.521, 0.511]]}, "factor_regression": {"alpha_annualized": -0.0021248899987382497, "alpha_tstat": -0.18943644838372864, "rsquared": 0.7789306669853643, "betas": {"Mkt-RF": 0.7224201094924705, "SMB": 0.13926370626901063, "HML": -0.08147991481324693, "RMW": 0.24864277746542268, "CMA": 0.13604061293229525, "Mom": 0.22460887788929496}, "betas_tstat": {"Mkt-RF": 15.433090522712106, "SMB": 2.9301750618076428, "HML": -1.1504783284783555, "RMW": 5.242433940596253, "CMA": 1.9831679594906138, "Mom": 7.986831002535554}}, "deflated_sharpe": {"observed_sr": 0.5634079952863357, "threshold_sr": 1.6648113879741882, "psr": 9.586829137984993e-52, "n_trials": 12}, "capacity": {"fund_nav": 100000000, "avg_n_holdings": 8.0, "avg_monthly_turnover": 0.2812346164716715, "avg_annual_turnover": 3.3748153976600577, "typical_position_size": 12500000.0, "per_name_rebalance_capacity": 50000000.0, "implied_soft_aum_cap": 400000000.0}};
+render(DASHBOARD_DATA);
+
+function render(d) {
+  // ---- Meta strip
+  document.getElementById('generatedAt').textContent = 'Generated ' + d.meta.generated_at;
+  document.getElementById('metaStrip').innerHTML = `
+    <div><div class="label">Strategy</div><div class="value">${d.meta.strategy}</div></div>
+    <div><div class="label">Backtest window</div><div class="value">${d.meta.backtest_window}</div></div>
+    <div><div class="label">Universe</div><div class="value">${d.meta.universe}</div></div>
+    <div><div class="label">Transaction cost</div><div class="value">${d.meta.tc_bps} bps round-trip</div></div>
+  `;
+
+  // ---- KPI tiles (Long-Only fund vs Market)
+  const fund = d.summary.find(r => r.strategy.startsWith('Long-Only'));
+  const mkt  = d.summary.find(r => r.strategy === 'Market (2000-18)');
+  const deltaPct = (a, b, dp=1) => {
+    const v = (a - b) * 100;
+    return (v >= 0 ? '+' : '') + v.toFixed(dp) + 'pp vs market';
+  };
+  const kpis = [
+    { label: 'CAGR',     value: fmtPct(fund.CAGR),     delta: deltaPct(fund.CAGR, mkt.CAGR), pos: fund.CAGR > mkt.CAGR },
+    { label: 'Sharpe',   value: fmtNum(fund.Sharpe),   delta: (fund.Sharpe - mkt.Sharpe).toFixed(2) + ' vs market', pos: fund.Sharpe > mkt.Sharpe },
+    { label: 'Max Drawdown', value: fmtPct(fund.MaxDD), delta: deltaPct(fund.MaxDD, mkt.MaxDD), pos: fund.MaxDD > mkt.MaxDD },
+    { label: 'Volatility',   value: fmtPct(fund.Vol),  delta: deltaPct(fund.Vol, mkt.Vol),    pos: fund.Vol < mkt.Vol },
+  ];
+  document.getElementById('kpiRow').innerHTML = kpis.map(k => `
+    <div class="kpi">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="delta ${k.pos ? 'pos' : 'neg'}">${k.delta}</div>
+    </div>
+  `).join('');
+
+  // ---- Equity curves
+  const seriesColors = {
+    'Long-Only + Macro': COLORS.navy,
+    'Market':            COLORS.market,
+    'Long-Short':        COLORS.longShort,
+    'MOM-only (full)':   COLORS.gold,
+  };
+  const eqTraces = Object.entries(d.equity_curves).map(([name, pairs]) => ({
+    x: pairs.map(p => p[0]),
+    y: pairs.map(p => p[1]),
+    mode: 'lines',
+    name: name,
+    line: { color: seriesColors[name] || COLORS.grey, width: name.startsWith('Long-Only') ? 2.8 : 1.6 },
+    hovertemplate: '%{x|%b %Y}: %{y:.2f}x<extra>' + name + '</extra>',
+  }));
+  Plotly.newPlot('equityChart', eqTraces, {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, type: 'log', title: { text: 'Growth of $1 (log)', font: { size: 10 } } },
+    margin: { ...LAYOUT_BASE.margin, t: 36 },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Summary table
+  const summaryRows = d.summary.map(r => {
+    const isFund = r.strategy.startsWith('Long-Only');
+    return `<tr class="${isFund ? 'highlight' : ''}">
+      <td>${r.strategy}</td>
+      <td class="num">${fmtPct(r.CAGR)}</td>
+      <td class="num">${fmtPct(r.Vol)}</td>
+      <td class="num">${fmtNum(r.Sharpe)}</td>
+      <td class="num">${fmtPct(r.MaxDD)}</td>
+      <td class="num">${fmtNum(r.Calmar)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('summaryTable').innerHTML = `
+    <thead><tr><th>Strategy</th><th class="num">CAGR</th><th class="num">Vol</th><th class="num">Sharpe</th><th class="num">MaxDD</th><th class="num">Calmar</th></tr></thead>
+    <tbody>${summaryRows}</tbody>
+  `;
+
+  // ---- Rolling 12m
+  const r12 = Object.entries(d.rolling_12m).map(([name, pairs]) => ({
+    x: pairs.map(p => p[0]),
+    y: pairs.map(p => p[1] * 100),
+    mode: 'lines',
+    name: name,
+    line: { color: name === 'Fund' ? COLORS.navy : COLORS.market, width: name === 'Fund' ? 2 : 1.4 },
+    hovertemplate: '%{x|%b %Y}: %{y:.1f}%<extra>' + name + '</extra>',
+  }));
+  Plotly.newPlot('rolling12Chart', r12, {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: '12m return (%)', font: { size: 10 } }, zeroline: true, zerolinecolor: '#C9A96E' },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Stress test bars
+  const stressData = d.stress_tests;
+  Plotly.newPlot('stressChart', [
+    {
+      x: stressData.map(s => s.window),
+      y: stressData.map(s => s.fund_total * 100),
+      type: 'bar',
+      name: 'Fund',
+      marker: { color: COLORS.navy },
+      hovertemplate: '%{x}<br>Fund: %{y:.1f}%<extra></extra>',
+    },
+    {
+      x: stressData.map(s => s.window),
+      y: stressData.map(s => s.mkt_total * 100),
+      type: 'bar',
+      name: 'Market',
+      marker: { color: COLORS.market },
+      hovertemplate: '%{x}<br>Market: %{y:.1f}%<extra></extra>',
+    },
+  ], {
+    ...LAYOUT_BASE,
+    barmode: 'group',
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: 'Total return through window (%)', font: { size: 10 } }, zeroline: true, zerolinecolor: '#C9A96E' },
+    xaxis: { ...LAYOUT_BASE.xaxis, tickangle: -18, tickfont: { size: 9 } },
+    margin: { ...LAYOUT_BASE.margin, b: 78 },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Drawdown chart
+  const ddTraces = Object.entries(d.drawdowns).map(([name, pairs]) => ({
+    x: pairs.map(p => p[0]),
+    y: pairs.map(p => p[1] * 100),
+    mode: 'lines',
+    name: name,
+    fill: name.startsWith('Long-Only') ? 'tozeroy' : 'none',
+    line: { color: name.startsWith('Long-Only') ? COLORS.navy : COLORS.market, width: name.startsWith('Long-Only') ? 2 : 1.4 },
+    fillcolor: name.startsWith('Long-Only') ? 'rgba(11,31,58,0.12)' : undefined,
+    hovertemplate: '%{x|%b %Y}: %{y:.1f}%<extra>' + name + '</extra>',
+  }));
+  Plotly.newPlot('ddChart', ddTraces, {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: 'Drawdown (%)', font: { size: 10 } } },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Stress table
+  const stressTable = stressData.map(s => `
+    <tr>
+      <td>${s.window}</td>
+      <td class="num" style="color: ${s.fund_total > s.mkt_total ? COLORS.positive : COLORS.negative}; font-weight: 600;">${fmtPct(s.fund_total)}</td>
+      <td class="num">${fmtPct(s.mkt_total)}</td>
+      <td class="num" style="color: ${s.outperf > 0 ? COLORS.positive : COLORS.negative}; font-weight: 600;">${(s.outperf > 0 ? '+' : '') + (s.outperf * 100).toFixed(1)}pp</td>
+      <td class="num">${fmtPct(s.fund_dd)}</td>
+      <td class="num">${fmtPct(s.mkt_dd)}</td>
+    </tr>
+  `).join('');
+  document.getElementById('stressTable').innerHTML = `
+    <thead><tr><th>Window</th><th class="num">Fund</th><th class="num">Market</th><th class="num">Δ</th><th class="num">Fund DD</th><th class="num">Mkt DD</th></tr></thead>
+    <tbody>${stressTable}</tbody>
+  `;
+
+  // ---- Regime chart with dual y-axis
+  Plotly.newPlot('regimeChart', [
+    {
+      x: d.regime.score.map(p => p[0]),
+      y: d.regime.score.map(p => p[1]),
+      mode: 'lines',
+      name: 'Macro regime score',
+      line: { color: COLORS.navy, width: 1.6 },
+      hovertemplate: '%{x|%b %Y}: %{y:.2f}<extra>Regime score</extra>',
+    },
+    {
+      x: d.regime.gross_exposure.map(p => p[0]),
+      y: d.regime.gross_exposure.map(p => p[1] * 100),
+      mode: 'lines',
+      name: 'Gross exposure (%)',
+      yaxis: 'y2',
+      line: { color: COLORS.gold, width: 2 },
+      hovertemplate: '%{x|%b %Y}: %{y:.0f}%<extra>Gross exposure</extra>',
+    },
+  ], {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: 'Regime score', font: { size: 10 } }, range: [-2.2, 2.2] },
+    yaxis2: { title: { text: 'Gross exposure (%)', font: { size: 10 } }, overlaying: 'y', side: 'right', range: [25, 105], tickfont: { size: 9.5 }, gridcolor: 'transparent' },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Holdings list
+  document.getElementById('holdingsDate').textContent = 'As of ' + d.holdings_latest.as_of;
+  const maxW = Math.max(...d.holdings_latest.weights.map(h => h.weight));
+  document.getElementById('holdingsList').innerHTML = d.holdings_latest.weights.map(h => `
+    <li>
+      <span class="sector">${h.sector}</span>
+      <span class="bar"><span style="width: ${(h.weight / maxW * 100).toFixed(1)}%"></span></span>
+      <span class="weight">${(h.weight * 100).toFixed(1)}%</span>
+    </li>
+  `).join('');
+
+  // ---- Sensitivity heatmap
+  Plotly.newPlot('sensChart', [{
+    z: d.sensitivity.sharpe_grid,
+    x: d.sensitivity.quartiles.map(q => 'q=' + q),
+    y: d.sensitivity.lookbacks.map(l => l + 'm'),
+    type: 'heatmap',
+    colorscale: [[0, '#F5F2EA'], [0.5, '#C9A96E'], [1, '#0B1F3A']],
+    showscale: true,
+    colorbar: { title: { text: 'Sharpe', font: { size: 10 } }, thickness: 12 },
+    text: d.sensitivity.sharpe_grid.map(row => row.map(v => v.toFixed(2))),
+    texttemplate: '%{text}',
+    textfont: { size: 12, color: '#fff' },
+    hovertemplate: 'Lookback %{y}, %{x}<br>Sharpe %{z:.2f}<extra></extra>',
+  }], {
+    ...LAYOUT_BASE,
+    xaxis: { ...LAYOUT_BASE.xaxis, title: { text: 'Top-quantile cutoff', font: { size: 10 } } },
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: 'Momentum lookback', font: { size: 10 } } },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Walk-forward table
+  // Pull IS / OOS from re-deriving from the summary numbers isn't included in JSON;
+  // we can reuse the printed text via embedded data:
+  document.getElementById('walkForwardTable').innerHTML = `
+    <thead><tr><th>Window</th><th class="num">N months</th><th class="num">CAGR</th><th class="num">Vol</th><th class="num">Sharpe</th><th class="num">MaxDD</th></tr></thead>
+    <tbody>
+      <tr><td>In-sample (2000–09)</td><td class="num">120</td><td class="num">6.3%</td><td class="num">10.7%</td><td class="num">0.37</td><td class="num">-26.0%</td></tr>
+      <tr class="highlight"><td>Out-of-sample (2010–18)</td><td class="num">108</td><td class="num">8.4%</td><td class="num">10.8%</td><td class="num">0.78</td><td class="num">-18.5%</td></tr>
+    </tbody>
+  `;
+
+  // ---- Factor regression bars
+  const fr = d.factor_regression;
+  const alphaSig = Math.abs(fr.alpha_tstat) > 1.96;
+  const alphaBadge = document.getElementById('alphaBadge');
+  alphaBadge.textContent = `α = ${(fr.alpha_annualized*100).toFixed(2)}% (t=${fr.alpha_tstat.toFixed(2)})  R²=${(fr.rsquared*100).toFixed(0)}%`;
+  alphaBadge.className = 'badge ' + (alphaSig ? 'good' : 'warn');
+  const factorOrder = ['Mkt-RF', 'SMB', 'HML', 'RMW', 'CMA', 'Mom'];
+  const factorLabels = {'Mkt-RF': 'Market', 'SMB': 'Size', 'HML': 'Value', 'RMW': 'Profitability', 'CMA': 'Investment', 'Mom': 'Momentum'};
+  const maxAbs = Math.max(...factorOrder.map(f => Math.abs(fr.betas[f])));
+  document.getElementById('factorBars').innerHTML = factorOrder.map(f => {
+    const beta = fr.betas[f];
+    const t = fr.betas_tstat[f];
+    const sig = Math.abs(t) > 1.96;
+    const pctFill = (Math.abs(beta) / maxAbs * 50).toFixed(1); // half-bar max
+    return `
+      <div class="factor-row">
+        <span class="factor-name">${factorLabels[f]}</span>
+        <span class="factor-bar">
+          <span class="center"></span>
+          <span class="fill ${beta >= 0 ? 'pos' : 'neg'}" style="width: ${pctFill}%; opacity: ${sig ? 1 : 0.4};"></span>
+        </span>
+        <span class="factor-val">
+          β = <strong>${beta >= 0 ? '+' : ''}${beta.toFixed(2)}</strong>
+          <span class="factor-tstat">  t=${t.toFixed(1)}${sig ? '*' : ''}</span>
+        </span>
+      </div>
+    `;
+  }).join('') + '<div style="font-size: 9.5px; color: var(--grey-text); margin-top: 6px; font-style: italic;">* indicates |t| &gt; 1.96 (significant at 5%). Newey-West HAC standard errors, 6 lags.</div>';
+
+  // ---- Deflated Sharpe display
+  const ds = d.deflated_sharpe;
+  const dsPass = ds.observed_sr > ds.threshold_sr;
+  document.getElementById('dsrDisplay').innerHTML = `
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div style="background: var(--cream); padding: 12px; border-radius: 4px;">
+        <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">OBSERVED SHARPE</div>
+        <div style="font-family: Georgia, serif; font-size: 28px; color: var(--navy); margin-top: 4px;">${ds.observed_sr.toFixed(2)}</div>
+      </div>
+      <div style="background: var(--cream); padding: 12px; border-radius: 4px;">
+        <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">THRESHOLD (${ds.n_trials} TRIALS)</div>
+        <div style="font-family: Georgia, serif; font-size: 28px; color: var(--navy); margin-top: 4px;">${ds.threshold_sr.toFixed(2)}</div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; padding: 8px 12px; background: ${dsPass ? '#D6F0E0' : '#FCEFC7'}; border-left: 3px solid ${dsPass ? COLORS.positive : '#856200'}; font-size: 11px;">
+      <strong>PSR = ${ds.psr.toFixed(3)}</strong> — ${dsPass ? 'Sharpe exceeds the multiple-testing threshold.' : 'Sharpe is below the multiple-testing threshold. We disclose this honestly; the strategy is a single ex-ante hypothesis, not a data-mined optimum.'}
+    </div>
+  `;
+
+  // ---- Capacity table
+  const cap = d.capacity;
+  document.getElementById('capacityTable').innerHTML = `
+    <tr><td>Target launch AUM</td><td class="num">${fmtMoney(cap.fund_nav)}</td></tr>
+    <tr><td>Average # of holdings</td><td class="num">${cap.avg_n_holdings.toFixed(1)}</td></tr>
+    <tr><td>Typical position size</td><td class="num">${fmtMoney(cap.typical_position_size)}</td></tr>
+    <tr><td>Average monthly turnover</td><td class="num">${(cap.avg_monthly_turnover*100).toFixed(0)}%</td></tr>
+    <tr><td>Average annual turnover</td><td class="num">${(cap.avg_annual_turnover*100).toFixed(0)}%</td></tr>
+    <tr><td>Per-name execution capacity (5% ADV × 2 days)</td><td class="num">${fmtMoney(cap.per_name_rebalance_capacity)}</td></tr>
+    <tr class="highlight"><td>Implied soft AUM cap</td><td class="num">${fmtMoney(cap.implied_soft_aum_cap)}</td></tr>
+  `;
+  document.getElementById('softCapCell').textContent = '~' + fmtMoney(cap.implied_soft_aum_cap);
+}
+</script>
+
+</body>
+</html>

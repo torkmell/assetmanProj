@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GSD2T Asset Management — Strategy One-Pager</title>
+<style>
+  @page { size: A4; margin: 14mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #0B1F3A;
+    margin: 0;
+    padding: 22px 28px;
+    background: #FFFFFF;
+    font-size: 10.5px;
+    line-height: 1.45;
+    max-width: 820px;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid #0B1F3A;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo-mark {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0B1F3A 0%, #1E3A6C 100%);
+    border: 2px solid #C9A96E;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 6px;
+    flex-shrink: 0;
+  }
+  .logo-bars { display: flex; gap: 2px; align-items: flex-end; height: 32px; }
+  .logo-bars span { width: 5px; background: #C9A96E; display: block; }
+  .logo-bars span:nth-child(1) { height: 35%; }
+  .logo-bars span:nth-child(2) { height: 55%; }
+  .logo-bars span:nth-child(3) { height: 85%; }
+  .logo-bars span:nth-child(4) { height: 65%; }
+  .logo-bars span:nth-child(5) { height: 100%; background: #FFFFFF; }
+  .brand-text h1 {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 24px;
+    letter-spacing: 1.5px;
+    color: #0B1F3A;
+  }
+  .brand-text h1 sup { font-size: 14px; }
+  .brand-text .sub {
+    font-size: 9.5px;
+    letter-spacing: 4px;
+    color: #1E3A6C;
+    margin-top: 2px;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 9px;
+    color: #5A6F8C;
+    letter-spacing: 1px;
+  }
+  .header-right .doc-type { font-weight: 700; color: #0B1F3A; font-size: 10px; letter-spacing: 2px; }
+
+  h2 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #0B1F3A;
+    border-bottom: 1px solid #C9A96E;
+    padding-bottom: 3px;
+    margin: 14px 0 8px;
+  }
+  .strategy-tagline {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    color: #1E3A6C;
+    padding: 8px 14px;
+    background: #F5F2EA;
+    border-left: 3px solid #C9A96E;
+    margin: 6px 0 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 22px;
+  }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  ul { margin: 4px 0 0; padding-left: 16px; }
+  ul li { margin-bottom: 3px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 10px; }
+  th, td { padding: 4px 6px; text-align: left; border-bottom: 1px solid #E5E0D2; }
+  th { background: #F5F2EA; color: #0B1F3A; font-weight: 600; font-size: 9.5px; letter-spacing: 0.5px; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .step {
+    background: #F5F2EA;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+  }
+  .step .step-num {
+    display: inline-block;
+    background: #0B1F3A; color: #C9A96E;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    text-align: center; line-height: 18px;
+    font-weight: 700; font-size: 10px;
+    margin-right: 6px;
+  }
+  .step strong { color: #0B1F3A; }
+  .pill {
+    display: inline-block;
+    background: #0B1F3A; color: #C9A96E;
+    padding: 1px 8px;
+    font-size: 8.5px;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .footer {
+    margin-top: 16px;
+    padding-top: 8px;
+    border-top: 1px solid #C9A96E;
+    font-size: 8.5px;
+    color: #5A6F8C;
+    line-height: 1.4;
+  }
+  .disclaimer { font-style: italic; }
+  .metric-callout {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 4px 0;
+  }
+  .metric-callout .m {
+    background: #0B1F3A; color: #FFFFFF;
+    padding: 8px 10px;
+    border-radius: 3px;
+    text-align: center;
+  }
+  .metric-callout .m .v { font-size: 16px; font-weight: 700; color: #C9A96E; font-family: Georgia, serif; }
+  .metric-callout .m .l { font-size: 8.5px; letter-spacing: 1px; margin-top: 2px; opacity: 0.85; }
+  .two-col-list { columns: 2; column-gap: 22px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">
+      <div class="logo-bars">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="brand-text">
+      <h1>GSD<sup>2</sup>T</h1>
+      <div class="sub">ASSET MANAGEMENT</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="doc-type">STRATEGY ONE-PAGER</div>
+    <div style="margin-top: 3px;">Internal · Team Review</div>
+    <div>v1.0 · May 2026</div>
+  </div>
+</div>
+
+<div class="strategy-tagline">
+  A systematic, macro-conditioned sector rotation fund that captures the lag between macro-regime shifts and
+  institutional sector re-allocation, expressed through liquid US equity sector ETFs.
+</div>
+
+<h2>The Edge</h2>
+<div class="grid">
+  <div>
+    <strong>What inefficiency we exploit.</strong> Sector returns persistently underreact to macro regime
+    transitions. Institutional benchmark-driven flows rebalance sector exposures with a multi-month lag,
+    leaving a window in which a systematic momentum signal — conditioned on the prevailing macro regime —
+    captures the dislocation before it closes.
+  </div>
+  <div>
+    <strong>Why it persists.</strong> Three structural reasons: (1) benchmark mandates discourage rapid
+    sector tilts; (2) macro signals are noisy and slow to converge on consensus; (3) the strategy is
+    capacity-constrained at the institutional scale that would otherwise arbitrage it. Crowding risk is
+    real but bounded by the same factors that create the edge.
+  </div>
+</div>
+
+<h2>How It Works — Three Signal Components</h2>
+<div class="grid-3">
+  <div class="step">
+    <span class="step-num">1</span><strong>Cross-Sectional Momentum</strong><br>
+    12-month total return, skip-1-month, z-scored across the universe each month-end.
+    Long the top quartile of sectors.
+  </div>
+  <div class="step">
+    <span class="step-num">2</span><strong>Macro Regime Composite</strong><br>
+    A four-factor risk-on/risk-off composite: credit spreads, real-rate trend, industrial production
+    YoY, commodities momentum. All inputs lagged one month — no look-ahead.
+  </div>
+  <div class="step">
+    <span class="step-num">3</span><strong>Risk-Aware Sizing</strong><br>
+    The macro composite scales total gross exposure between 30% (risk-off) and 100% (risk-on);
+    uninvested capital earns the risk-free rate. Equal-weight within the long sleeve.
+  </div>
+</div>
+
+<h2>Universe &amp; Instruments</h2>
+<div class="grid">
+  <div>
+    <strong>Tradable universe.</strong> 11 SPDR US sector ETFs
+    <span class="pill">XLE · XLF · XLK · XLI · XLY · XLP · XLV · XLU · XLB · XLRE · XLC</span>
+    plus SHY as the cash-equivalent during risk-off periods. All instruments are deeply liquid;
+    daily volumes range from hundreds of millions to several billion USD.
+  </div>
+  <div>
+    <strong>Backtest proxy.</strong> Fama–French 30-industry value-weighted portfolios (1990–2018, ~29
+    years). Avoids survivorship bias and ETF-launch dating issues; the live ETF universe is the
+    institutional implementation of the same exposures.
+  </div>
+</div>
+
+<h2>Risk Framework</h2>
+<ul class="two-col-list">
+  <li><strong>Gross exposure cap:</strong> 100% (long-only fund); no leverage.</li>
+  <li><strong>Per-sector position limit:</strong> 20% NAV.</li>
+  <li><strong>Vol target:</strong> 10–12% annualised, achieved via regime-scaled gross exposure rather than leverage.</li>
+  <li><strong>Drawdown trigger:</strong> de-risk to 50% gross at –12% peak-to-trough; halt new risk at –18%.</li>
+  <li><strong>Factor monitoring:</strong> monthly regression of returns vs Fama–French 5 + MOM; flag if factor beta exceeds tolerance.</li>
+  <li><strong>Stress testing:</strong> 2000 dot-com, 2008 GFC, 2011 Eurozone, 2015 China, 2018 vol spike.</li>
+</ul>
+
+<h2>Simulated Performance — 2000-01 to 2018-12</h2>
+<div class="metric-callout">
+  <div class="m"><div class="v">7.3%</div><div class="l">CAGR</div></div>
+  <div class="m"><div class="v">10.7%</div><div class="l">VOL</div></div>
+  <div class="m"><div class="v">0.56</div><div class="l">SHARPE</div></div>
+  <div class="m"><div class="v">-26.0%</div><div class="l">MAX DRAWDOWN</div></div>
+</div>
+<p style="font-size: 10px; color: #1E3A6C; margin-top: 6px; line-height: 1.5;">
+  <strong>vs SPY total return (same window):</strong> 5.2% CAGR · 15.0% vol · 0.31 Sharpe · -50.3% max DD.
+  Fund delivers +2.1pp annual return, ~30% lower volatility, and roughly half the maximum drawdown.
+  <strong>Walk-forward:</strong> out-of-sample Sharpe (2010-18) of 0.78 exceeds in-sample (2000-09) of 0.37.
+  <strong>Crisis windows:</strong> dot-com -5.4% vs market -40.6% (+35pp), GFC -23.8% vs market -49.3% (+25pp).
+  All figures <strong>simulated</strong> on Fama–French 30-industry value-weighted returns, net of 10 bps round-trip cost. Live ETF implementation has not been traded.
+</p>
+
+<h2>Fund Structure &amp; Terms</h2>
+<table>
+  <tr><th>Item</th><th>Term</th><th>Rationale</th></tr>
+  <tr><td>Vehicle</td><td>Cayman master / Delaware feeder</td><td>Standard onshore/offshore institutional structure</td></tr>
+  <tr><td>Liquidity</td><td>Monthly, 30-day notice</td><td>Matches underlying ETF liquidity; no liquidity mismatch</td></tr>
+  <tr><td>Lock-up</td><td>6-month soft</td><td>Light, given underlying daily liquidity</td></tr>
+  <tr><td>Management fee</td><td>1.0%</td><td>Below standard given systematic, monthly-rebalance profile</td></tr>
+  <tr><td>Performance fee</td><td>15% above SPY total return, high-water mark</td><td>Pay for alpha vs the natural benchmark, not beta</td></tr>
+  <tr><td>Target AUM</td><td>USD 100M at launch; soft cap ~$400M</td><td>Implied by 5%-of-ADV × 2-day execution limit; 4× headroom at $100M</td></tr>
+</table>
+
+<h2>Why Now</h2>
+<div>
+  Macro regime variance is at multi-decade highs (rates, inflation, growth all in active transitions),
+  and sector dispersion within US equities has widened — both conditions historically associated with
+  outperformance of systematic sector-rotation strategies. Concurrent strategies in this space are
+  predominantly discretionary or single-signal; the differentiated combination of cross-sectional
+  momentum with a transparent macro overlay is, to our knowledge, not crowded.
+</div>
+
+<div class="footer">
+  <div><strong>Team:</strong> GSD2T Asset Management · ESADE Asset Management Course · Group Project · Live pitch 10 June 2026</div>
+  <div class="disclaimer" style="margin-top: 4px;">
+    This document is a fictional pitch prepared for educational purposes only. It does not constitute
+    investment advice or an offer to sell securities. All performance figures are simulated and based on
+    historical data; past performance — simulated or otherwise — is not indicative of future results.
+  </div>
+</div>
+
+</body>
+</html>

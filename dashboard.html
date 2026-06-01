@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GSD2T Asset Management — Strategy Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+  :root {
+    --navy:        #0B1F3A;
+    --navy-light:  #1E3A6C;
+    --gold:        #C9A96E;
+    --gold-dark:   #8C6A2F;
+    --cream:       #F5F2EA;
+    --grey-text:   #5A6F8C;
+    --positive:    #2E7D5B;
+    --negative:    #B83A3A;
+    --bg:          #FAFAF7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--navy);
+    color: #fff;
+    padding: 14px 28px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 14px; }
+  .logo-mark {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+    border: 2px solid var(--gold);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 5px;
+    flex-shrink: 0;
+  }
+  .logo-bars { display: flex; gap: 2px; align-items: flex-end; height: 26px; }
+  .logo-bars span { width: 4px; background: var(--gold); display: block; }
+  .logo-bars span:nth-child(1) { height: 35%; }
+  .logo-bars span:nth-child(2) { height: 55%; }
+  .logo-bars span:nth-child(3) { height: 85%; }
+  .logo-bars span:nth-child(4) { height: 65%; }
+  .logo-bars span:nth-child(5) { height: 100%; background: #fff; }
+  .brand h1 {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px;
+    letter-spacing: 1.2px;
+  }
+  .brand h1 sup { font-size: 12px; }
+  .brand .sub { font-size: 9px; letter-spacing: 4px; color: var(--gold); margin-top: 1px; }
+  .topbar-right { font-size: 10.5px; text-align: right; opacity: 0.85; line-height: 1.5; }
+  .topbar-right strong { color: var(--gold); letter-spacing: 1px; }
+
+  .container { padding: 22px 28px 40px; max-width: 1400px; margin: 0 auto; }
+
+  .meta-strip {
+    background: #fff;
+    border: 1px solid #E5E0D2;
+    border-left: 3px solid var(--gold);
+    padding: 10px 16px;
+    margin-bottom: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 8px 22px;
+    font-size: 11px;
+  }
+  .meta-strip .label { color: var(--grey-text); letter-spacing: 1px; text-transform: uppercase; font-size: 9px; }
+  .meta-strip .value { color: var(--navy); font-weight: 600; margin-top: 1px; }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .kpi {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 4px;
+    padding: 14px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::after {
+    content: '';
+    position: absolute; right: -20px; top: -20px;
+    width: 70px; height: 70px;
+    background: var(--gold);
+    opacity: 0.06;
+    border-radius: 50%;
+  }
+  .kpi .label {
+    font-size: 9.5px; letter-spacing: 1.5px;
+    color: var(--gold); text-transform: uppercase;
+  }
+  .kpi .value {
+    font-family: Georgia, serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    margin: 4px 0 2px;
+  }
+  .kpi .delta {
+    font-size: 11px;
+    color: #B8C8E0;
+  }
+  .kpi .delta.pos { color: #6ECF9A; }
+  .kpi .delta.neg { color: #E89090; }
+
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; margin-bottom: 18px; }
+  .grid-2-eq { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 18px; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #E5E0D2;
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+  .card h2 {
+    margin: 0 0 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--navy);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--gold);
+  }
+  .card .subtitle {
+    font-size: 10px;
+    color: var(--grey-text);
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+  .chart { width: 100%; height: 320px; }
+  .chart-tall { width: 100%; height: 380px; }
+  .chart-short { width: 100%; height: 240px; }
+
+  table.summary { width: 100%; border-collapse: collapse; font-size: 11px; }
+  table.summary th, table.summary td { padding: 5px 8px; text-align: left; border-bottom: 1px solid #E5E0D2; }
+  table.summary th { background: var(--cream); font-weight: 600; font-size: 10px; color: var(--navy); letter-spacing: 0.5px; }
+  table.summary td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.summary tr.highlight { background: rgba(201, 169, 110, 0.08); font-weight: 600; }
+  table.summary tr.highlight td { color: var(--navy); }
+
+  .holdings-list { list-style: none; padding: 0; margin: 0; }
+  .holdings-list li {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 11px;
+  }
+  .holdings-list .bar {
+    flex: 1;
+    margin: 0 10px;
+    height: 6px;
+    background: var(--cream);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+  }
+  .holdings-list .bar > span {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, var(--navy-light) 0%, var(--gold) 100%);
+    border-radius: 3px;
+  }
+  .holdings-list .weight {
+    font-variant-numeric: tabular-nums;
+    color: var(--navy);
+    font-weight: 600;
+    min-width: 42px;
+    text-align: right;
+  }
+  .holdings-list .sector { min-width: 80px; font-weight: 600; color: var(--navy); }
+
+  .factor-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--cream);
+    font-size: 11px;
+  }
+  .factor-row .factor-name { font-weight: 600; min-width: 60px; }
+  .factor-row .factor-bar { flex: 1; margin: 0 10px; position: relative; height: 10px; }
+  .factor-row .factor-bar .center { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--grey-text); opacity: 0.5; }
+  .factor-row .factor-bar .fill { position: absolute; top: 0; bottom: 0; }
+  .factor-row .factor-bar .fill.pos { background: var(--positive); left: 50%; }
+  .factor-row .factor-bar .fill.neg { background: var(--negative); right: 50%; }
+  .factor-row .factor-val { font-variant-numeric: tabular-nums; min-width: 80px; text-align: right; font-size: 10.5px; }
+  .factor-row .factor-tstat { color: var(--grey-text); font-size: 9.5px; font-style: italic; }
+
+  .footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gold);
+    font-size: 9.5px;
+    color: var(--grey-text);
+    line-height: 1.5;
+  }
+  .footer strong { color: var(--navy); }
+
+  .badge {
+    display: inline-block;
+    background: var(--cream);
+    color: var(--navy);
+    padding: 2px 8px;
+    font-size: 9.5px;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    margin-left: 6px;
+  }
+  .badge.warn { background: #FCEFC7; color: #856200; }
+  .badge.good { background: #D6F0E0; color: #1F5C3C; }
+
+  .tabnav { display: flex; gap: 0; margin-bottom: 14px; border-bottom: 1px solid var(--gold); }
+  .tabnav button {
+    background: transparent; border: none;
+    padding: 10px 18px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--grey-text);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    font-family: inherit;
+  }
+  .tabnav button.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 700; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mark">
+      <div class="logo-bars"><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="brand">
+      <h1>GSD<sup>2</sup>T <span style="font-family: 'Helvetica Neue', sans-serif; font-size: 11px; letter-spacing: 4px; color: var(--gold); margin-left: 6px;">ASSET MANAGEMENT</span></h1>
+      <div class="sub">SYSTEMATIC · DISCIPLINED · MACRO-AWARE</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <strong>STRATEGY DASHBOARD</strong><br>
+    Internal · Team Review<br>
+    <span id="generatedAt">—</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="meta-strip" id="metaStrip">
+    <!-- populated by JS -->
+  </div>
+
+  <div class="tabnav">
+    <button data-tab="overview" class="active">Overview</button>
+    <button data-tab="risk">Risk &amp; Drawdowns</button>
+    <button data-tab="signals">Signals &amp; Positioning</button>
+    <button data-tab="robustness">Robustness &amp; Factors</button>
+    <button data-tab="capacity">Capacity &amp; Terms</button>
+  </div>
+
+  <!-- ============================ OVERVIEW TAB ============================ -->
+  <div class="tab-panel active" id="tab-overview">
+
+    <div class="kpi-row" id="kpiRow"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>Cumulative Net Wealth <span class="badge">SIMULATED · NET OF 10 BPS</span></h2>
+        <div class="subtitle">Growth of $1 invested at backtest inception. Log scale. Long-Only fund is the pitched product; Long-Short shown for reference (does not add value standalone).</div>
+        <div id="equityChart" class="chart-tall"></div>
+      </div>
+      <div class="card">
+        <h2>Performance Summary</h2>
+        <div class="subtitle">All variants, net of transaction costs, annualised metrics.</div>
+        <table class="summary" id="summaryTable"></table>
+        <div style="margin-top: 12px; font-size: 10.5px; color: var(--grey-text);">
+          <strong style="color: var(--navy);">Read this how:</strong> the fund returns ~2pp more per year than the market with materially lower volatility and roughly half the maximum drawdown. Sharpe nearly doubles. Honest comparison: the Long-Short variant adds no value as a standalone — it is reported for transparency, not pitched.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2-eq">
+      <div class="card">
+        <h2>Rolling 12-Month Return — Fund vs Market</h2>
+        <div class="subtitle">When does the fund earn its keep? Most positively during regime transitions and crisis periods.</div>
+        <div id="rolling12Chart" class="chart"></div>
+      </div>
+      <div class="card">
+        <h2>Stress Tests — Named Crisis Windows</h2>
+        <div class="subtitle">Fund vs market total return through historical regime breaks. Dot-com and GFC are the showpiece outperformance windows.</div>
+        <div id="stressChart" class="chart"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================ RISK TAB ============================ -->
+  <div class="tab-panel" id="tab-risk">
+    <div class="grid-2-eq">
+      <div class="card">
+        <h2>Drawdown — Fund vs Market</h2>
+        <div class="subtitle">Underwater chart from peak NAV.</div>
+        <div id="ddChart" class="chart-tall"></div>
+      </div>
+      <div class="card">
+        <h2>Stress Test Breakdown</h2>
+        <div class="subtitle">Total return and trough drawdown in named crisis windows.</div>
+        <table class="summary" id="stressTable"></table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Risk Framework Limits</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 8px; font-size: 11.5px;">
+        <div><strong>Gross exposure cap:</strong> 100% (long-only)</div>
+        <div><strong>Per-sector position limit:</strong> 20% NAV</div>
+        <div><strong>Vol target:</strong> 10–12% annualised</div>
+        <div><strong>Drawdown trigger:</strong> de-risk to 50% gross at -12% PTT</div>
+        <div><strong>Hard halt:</strong> no new risk at -18% PTT</div>
+        <div><strong>Factor monitoring:</strong> monthly FF5+MOM regression</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ SIGNALS TAB ============================ -->
+  <div class="tab-panel" id="tab-signals">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Macro Regime Score &amp; Gross Exposure</h2>
+        <div class="subtitle">Composite of credit spreads, real-rate trend, IP YoY, commodities momentum (all lagged 1 month). Maps to gross exposure in [30%, 100%].</div>
+        <div id="regimeChart" class="chart-tall"></div>
+      </div>
+      <div class="card">
+        <h2>Current Top-Quartile Holdings <span class="badge" id="holdingsDate">—</span></h2>
+        <div class="subtitle">Equal-weighted within the long sleeve, gross-exposure scaled by regime overlay.</div>
+        <ul class="holdings-list" id="holdingsList"></ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How a Trade Gets Made — Decision Flow</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 8px;">
+        <div style="background: var(--cream); padding: 10px 12px; border-radius: 4px;">
+          <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">STEP 1 · LAST DAY OF MONTH</div>
+          <div style="margin-top: 4px;"><strong>Rank sectors.</strong> Compute 12m skip-1m return, z-score cross-sectionally. Identify top-quartile basket (typically 7–8 industries).</div>
+        </div>
+        <div style="background: var(--cream); padding: 10px 12px; border-radius: 4px;">
+          <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">STEP 2 · LAST DAY OF MONTH</div>
+          <div style="margin-top: 4px;"><strong>Read the regime.</strong> Compute the macro composite from prior-month-end data. Map to gross exposure in [0.3, 1.0].</div>
+        </div>
+        <div style="background: var(--cream); padding: 10px 12px; border-radius: 4px;">
+          <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">STEP 3 · OVERNIGHT</div>
+          <div style="margin-top: 4px;"><strong>Generate orders.</strong> Equal-weight target weights × gross exposure. Compute delta vs current book. Stagger over 2 trading days at &lt;5% ADV per name.</div>
+        </div>
+        <div style="background: var(--cream); padding: 10px 12px; border-radius: 4px;">
+          <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">STEP 4 · DAILY</div>
+          <div style="margin-top: 4px;"><strong>Monitor.</strong> Drawdown vs trigger, factor exposure tracking, individual position limit checks. No discretionary intramonth rebalances.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ ROBUSTNESS TAB ============================ -->
+  <div class="tab-panel" id="tab-robustness">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Parameter Sensitivity — Sharpe Across Grid</h2>
+        <div class="subtitle">Sharpe of the long-only fund across all combinations of momentum lookback (rows) and top-quartile cutoff (columns). A robust edge survives small parameter changes.</div>
+        <div id="sensChart" class="chart"></div>
+      </div>
+      <div class="card">
+        <h2>Walk-Forward (In-Sample vs Out-of-Sample)</h2>
+        <div class="subtitle">Cut the sample at 2010-01. The regime-to-exposure mapping is fixed in-sample and applied unchanged out-of-sample. OOS Sharpe is higher than IS — the edge holds up.</div>
+        <table class="summary" id="walkForwardTable"></table>
+      </div>
+    </div>
+
+    <div class="grid-2-eq">
+      <div class="card">
+        <h2>Factor Regression — Alpha vs FF5 + MOM <span id="alphaBadge" class="badge"></span></h2>
+        <div class="subtitle">OLS with Newey-West (HAC) standard errors. The strategy is, honestly, repackaged factor beta — there is no statistically significant alpha after controlling for market, size, value, profitability, investment, and momentum factors. We deliver a better risk-adjusted combination of these exposures, not a magic signal.</div>
+        <div id="factorBars" style="margin-top: 10px;"></div>
+      </div>
+      <div class="card">
+        <h2>Deflated Sharpe Ratio (Bailey &amp; López de Prado)</h2>
+        <div class="subtitle">Adjusts the observed Sharpe for the number of trials and the non-normality of returns. Honest disclosure: a Sharpe of 0.56 does not survive multiple-testing correction at the 12-trial parameter grid. We treat this as a brake on overclaiming, not as a disqualifier — the macro overlay is a single, ex-ante hypothesis, not data-mined.</div>
+        <div id="dsrDisplay" style="margin-top: 12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ CAPACITY TAB ============================ -->
+  <div class="tab-panel" id="tab-capacity">
+    <div class="grid-2">
+      <div class="card">
+        <h2>Capacity Analysis</h2>
+        <div class="subtitle">Based on the simulated average book and a 5%-of-ADV self-imposed execution limit.</div>
+        <table class="summary" id="capacityTable"></table>
+      </div>
+      <div class="card">
+        <h2>Fund Structure &amp; Terms</h2>
+        <table class="summary">
+          <tr><th>Item</th><th>Term</th></tr>
+          <tr><td>Vehicle</td><td>Cayman master / Delaware feeder</td></tr>
+          <tr><td>Liquidity</td><td>Monthly, 30-day notice</td></tr>
+          <tr><td>Lock-up</td><td>6-month soft</td></tr>
+          <tr><td>Management fee</td><td>1.0%</td></tr>
+          <tr><td>Performance fee</td><td>15% above SPY total return, HWM</td></tr>
+          <tr><td>Benchmark</td><td>SPDR S&amp;P 500 (SPY) total return</td></tr>
+          <tr><td>Target launch AUM</td><td>USD 100M</td></tr>
+          <tr><td>Soft cap</td><td id="softCapCell">—</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Universe — Live Implementation</h2>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 11px;">
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLE Energy</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLF Financials</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLK Technology</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLI Industrials</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLY Cons Disc</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLP Cons Staples</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLV Health Care</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLU Utilities</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLB Materials</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLRE Real Estate</span>
+        <span style="background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 3px;">XLC Comm Svcs</span>
+        <span style="background: var(--gold); color: var(--navy); padding: 4px 10px; border-radius: 3px;">SHY (cash sleeve)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <strong>GSD2T Asset Management</strong> · ESADE Asset Management Course Group Project · Live pitch 10 June 2026.
+    <br>
+    All performance metrics are <strong>SIMULATED</strong> on Fama–French 30-industry monthly value-weighted returns (1990-01 to 2018-12), net of an assumed 10 bps round-trip transaction cost. Live ETF implementation has not been traded. This document is a fictional pitch prepared for educational purposes only and does not constitute investment advice or an offer to sell securities. Past performance — simulated or otherwise — is not indicative of future results.
+  </div>
+
+</div>
+
+<script>
+const COLORS = {
+  navy: '#0B1F3A',
+  navyLight: '#1E3A6C',
+  gold: '#C9A96E',
+  grey: '#5A6F8C',
+  positive: '#2E7D5B',
+  negative: '#B83A3A',
+  market: '#888888',
+  longShort: '#A05630',
+};
+
+const LAYOUT_BASE = {
+  margin: { t: 24, r: 16, b: 38, l: 56 },
+  paper_bgcolor: '#fff',
+  plot_bgcolor: '#fff',
+  font: { family: 'Helvetica Neue, Helvetica, Arial, sans-serif', size: 10.5, color: '#0B1F3A' },
+  xaxis: { gridcolor: '#EEE9DA', linecolor: '#E5E0D2', tickfont: { size: 9.5 } },
+  yaxis: { gridcolor: '#EEE9DA', linecolor: '#E5E0D2', tickfont: { size: 9.5 } },
+  legend: { orientation: 'h', x: 0, y: 1.13, font: { size: 10 } },
+  hoverlabel: { bgcolor: '#0B1F3A', font: { color: '#fff', size: 11 } },
+};
+
+function fmtPct(x, dp=1) {
+  if (x === null || x === undefined || isNaN(x)) return '—';
+  return (x * 100).toFixed(dp) + '%';
+}
+function fmtNum(x, dp=2) {
+  if (x === null || x === undefined || isNaN(x)) return '—';
+  return x.toFixed(dp);
+}
+function fmtMoney(x) {
+  if (!x) return '—';
+  if (x >= 1e9) return '$' + (x/1e9).toFixed(2) + 'B';
+  if (x >= 1e6) return '$' + (x/1e6).toFixed(1) + 'M';
+  if (x >= 1e3) return '$' + (x/1e3).toFixed(0) + 'K';
+  return '$' + x.toFixed(0);
+}
+
+// ---- Tab handling
+document.querySelectorAll('.tabnav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabnav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    // Plotly redraw needed when revealing hidden tabs
+    window.dispatchEvent(new Event('resize'));
+  });
+});
+
+// ---- Load data
+fetch('dashboard_data.json')
+  .then(r => r.json())
+  .then(data => render(data))
+  .catch(err => {
+    document.querySelector('.container').innerHTML =
+      '<div class="card" style="border-color: ' + COLORS.negative + ';"><h2>Could not load dashboard_data.json</h2><div style="color: ' + COLORS.negative + ';">' + err + '</div><div style="margin-top:8px;">Make sure you run <code>python backtest.py</code> from the Group_Project directory first, then open this dashboard with a local web server (e.g. <code>python -m http.server 8000</code> and visit <code>http://localhost:8000/dashboard.html</code>). Browsers block <code>fetch</code> from <code>file://</code> URLs.</div></div>';
+  });
+
+function render(d) {
+  // ---- Meta strip
+  document.getElementById('generatedAt').textContent = 'Generated ' + d.meta.generated_at;
+  document.getElementById('metaStrip').innerHTML = `
+    <div><div class="label">Strategy</div><div class="value">${d.meta.strategy}</div></div>
+    <div><div class="label">Backtest window</div><div class="value">${d.meta.backtest_window}</div></div>
+    <div><div class="label">Universe</div><div class="value">${d.meta.universe}</div></div>
+    <div><div class="label">Transaction cost</div><div class="value">${d.meta.tc_bps} bps round-trip</div></div>
+  `;
+
+  // ---- KPI tiles (Long-Only fund vs Market)
+  const fund = d.summary.find(r => r.strategy.startsWith('Long-Only'));
+  const mkt  = d.summary.find(r => r.strategy === 'Market (2000-18)');
+  const deltaPct = (a, b, dp=1) => {
+    const v = (a - b) * 100;
+    return (v >= 0 ? '+' : '') + v.toFixed(dp) + 'pp vs market';
+  };
+  const kpis = [
+    { label: 'CAGR',     value: fmtPct(fund.CAGR),     delta: deltaPct(fund.CAGR, mkt.CAGR), pos: fund.CAGR > mkt.CAGR },
+    { label: 'Sharpe',   value: fmtNum(fund.Sharpe),   delta: (fund.Sharpe - mkt.Sharpe).toFixed(2) + ' vs market', pos: fund.Sharpe > mkt.Sharpe },
+    { label: 'Max Drawdown', value: fmtPct(fund.MaxDD), delta: deltaPct(fund.MaxDD, mkt.MaxDD), pos: fund.MaxDD > mkt.MaxDD },
+    { label: 'Volatility',   value: fmtPct(fund.Vol),  delta: deltaPct(fund.Vol, mkt.Vol),    pos: fund.Vol < mkt.Vol },
+  ];
+  document.getElementById('kpiRow').innerHTML = kpis.map(k => `
+    <div class="kpi">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="delta ${k.pos ? 'pos' : 'neg'}">${k.delta}</div>
+    </div>
+  `).join('');
+
+  // ---- Equity curves
+  const seriesColors = {
+    'Long-Only + Macro': COLORS.navy,
+    'Market':            COLORS.market,
+    'Long-Short':        COLORS.longShort,
+    'MOM-only (full)':   COLORS.gold,
+  };
+  const eqTraces = Object.entries(d.equity_curves).map(([name, pairs]) => ({
+    x: pairs.map(p => p[0]),
+    y: pairs.map(p => p[1]),
+    mode: 'lines',
+    name: name,
+    line: { color: seriesColors[name] || COLORS.grey, width: name.startsWith('Long-Only') ? 2.8 : 1.6 },
+    hovertemplate: '%{x|%b %Y}: %{y:.2f}x<extra>' + name + '</extra>',
+  }));
+  Plotly.newPlot('equityChart', eqTraces, {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, type: 'log', title: { text: 'Growth of $1 (log)', font: { size: 10 } } },
+    margin: { ...LAYOUT_BASE.margin, t: 36 },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Summary table
+  const summaryRows = d.summary.map(r => {
+    const isFund = r.strategy.startsWith('Long-Only');
+    return `<tr class="${isFund ? 'highlight' : ''}">
+      <td>${r.strategy}</td>
+      <td class="num">${fmtPct(r.CAGR)}</td>
+      <td class="num">${fmtPct(r.Vol)}</td>
+      <td class="num">${fmtNum(r.Sharpe)}</td>
+      <td class="num">${fmtPct(r.MaxDD)}</td>
+      <td class="num">${fmtNum(r.Calmar)}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('summaryTable').innerHTML = `
+    <thead><tr><th>Strategy</th><th class="num">CAGR</th><th class="num">Vol</th><th class="num">Sharpe</th><th class="num">MaxDD</th><th class="num">Calmar</th></tr></thead>
+    <tbody>${summaryRows}</tbody>
+  `;
+
+  // ---- Rolling 12m
+  const r12 = Object.entries(d.rolling_12m).map(([name, pairs]) => ({
+    x: pairs.map(p => p[0]),
+    y: pairs.map(p => p[1] * 100),
+    mode: 'lines',
+    name: name,
+    line: { color: name === 'Fund' ? COLORS.navy : COLORS.market, width: name === 'Fund' ? 2 : 1.4 },
+    hovertemplate: '%{x|%b %Y}: %{y:.1f}%<extra>' + name + '</extra>',
+  }));
+  Plotly.newPlot('rolling12Chart', r12, {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: '12m return (%)', font: { size: 10 } }, zeroline: true, zerolinecolor: '#C9A96E' },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Stress test bars
+  const stressData = d.stress_tests;
+  Plotly.newPlot('stressChart', [
+    {
+      x: stressData.map(s => s.window),
+      y: stressData.map(s => s.fund_total * 100),
+      type: 'bar',
+      name: 'Fund',
+      marker: { color: COLORS.navy },
+      hovertemplate: '%{x}<br>Fund: %{y:.1f}%<extra></extra>',
+    },
+    {
+      x: stressData.map(s => s.window),
+      y: stressData.map(s => s.mkt_total * 100),
+      type: 'bar',
+      name: 'Market',
+      marker: { color: COLORS.market },
+      hovertemplate: '%{x}<br>Market: %{y:.1f}%<extra></extra>',
+    },
+  ], {
+    ...LAYOUT_BASE,
+    barmode: 'group',
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: 'Total return through window (%)', font: { size: 10 } }, zeroline: true, zerolinecolor: '#C9A96E' },
+    xaxis: { ...LAYOUT_BASE.xaxis, tickangle: -18, tickfont: { size: 9 } },
+    margin: { ...LAYOUT_BASE.margin, b: 78 },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Drawdown chart
+  const ddTraces = Object.entries(d.drawdowns).map(([name, pairs]) => ({
+    x: pairs.map(p => p[0]),
+    y: pairs.map(p => p[1] * 100),
+    mode: 'lines',
+    name: name,
+    fill: name.startsWith('Long-Only') ? 'tozeroy' : 'none',
+    line: { color: name.startsWith('Long-Only') ? COLORS.navy : COLORS.market, width: name.startsWith('Long-Only') ? 2 : 1.4 },
+    fillcolor: name.startsWith('Long-Only') ? 'rgba(11,31,58,0.12)' : undefined,
+    hovertemplate: '%{x|%b %Y}: %{y:.1f}%<extra>' + name + '</extra>',
+  }));
+  Plotly.newPlot('ddChart', ddTraces, {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: 'Drawdown (%)', font: { size: 10 } } },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Stress table
+  const stressTable = stressData.map(s => `
+    <tr>
+      <td>${s.window}</td>
+      <td class="num" style="color: ${s.fund_total > s.mkt_total ? COLORS.positive : COLORS.negative}; font-weight: 600;">${fmtPct(s.fund_total)}</td>
+      <td class="num">${fmtPct(s.mkt_total)}</td>
+      <td class="num" style="color: ${s.outperf > 0 ? COLORS.positive : COLORS.negative}; font-weight: 600;">${(s.outperf > 0 ? '+' : '') + (s.outperf * 100).toFixed(1)}pp</td>
+      <td class="num">${fmtPct(s.fund_dd)}</td>
+      <td class="num">${fmtPct(s.mkt_dd)}</td>
+    </tr>
+  `).join('');
+  document.getElementById('stressTable').innerHTML = `
+    <thead><tr><th>Window</th><th class="num">Fund</th><th class="num">Market</th><th class="num">Δ</th><th class="num">Fund DD</th><th class="num">Mkt DD</th></tr></thead>
+    <tbody>${stressTable}</tbody>
+  `;
+
+  // ---- Regime chart with dual y-axis
+  Plotly.newPlot('regimeChart', [
+    {
+      x: d.regime.score.map(p => p[0]),
+      y: d.regime.score.map(p => p[1]),
+      mode: 'lines',
+      name: 'Macro regime score',
+      line: { color: COLORS.navy, width: 1.6 },
+      hovertemplate: '%{x|%b %Y}: %{y:.2f}<extra>Regime score</extra>',
+    },
+    {
+      x: d.regime.gross_exposure.map(p => p[0]),
+      y: d.regime.gross_exposure.map(p => p[1] * 100),
+      mode: 'lines',
+      name: 'Gross exposure (%)',
+      yaxis: 'y2',
+      line: { color: COLORS.gold, width: 2 },
+      hovertemplate: '%{x|%b %Y}: %{y:.0f}%<extra>Gross exposure</extra>',
+    },
+  ], {
+    ...LAYOUT_BASE,
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: 'Regime score', font: { size: 10 } }, range: [-2.2, 2.2] },
+    yaxis2: { title: { text: 'Gross exposure (%)', font: { size: 10 } }, overlaying: 'y', side: 'right', range: [25, 105], tickfont: { size: 9.5 }, gridcolor: 'transparent' },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Holdings list
+  document.getElementById('holdingsDate').textContent = 'As of ' + d.holdings_latest.as_of;
+  const maxW = Math.max(...d.holdings_latest.weights.map(h => h.weight));
+  document.getElementById('holdingsList').innerHTML = d.holdings_latest.weights.map(h => `
+    <li>
+      <span class="sector">${h.sector}</span>
+      <span class="bar"><span style="width: ${(h.weight / maxW * 100).toFixed(1)}%"></span></span>
+      <span class="weight">${(h.weight * 100).toFixed(1)}%</span>
+    </li>
+  `).join('');
+
+  // ---- Sensitivity heatmap
+  Plotly.newPlot('sensChart', [{
+    z: d.sensitivity.sharpe_grid,
+    x: d.sensitivity.quartiles.map(q => 'q=' + q),
+    y: d.sensitivity.lookbacks.map(l => l + 'm'),
+    type: 'heatmap',
+    colorscale: [[0, '#F5F2EA'], [0.5, '#C9A96E'], [1, '#0B1F3A']],
+    showscale: true,
+    colorbar: { title: { text: 'Sharpe', font: { size: 10 } }, thickness: 12 },
+    text: d.sensitivity.sharpe_grid.map(row => row.map(v => v.toFixed(2))),
+    texttemplate: '%{text}',
+    textfont: { size: 12, color: '#fff' },
+    hovertemplate: 'Lookback %{y}, %{x}<br>Sharpe %{z:.2f}<extra></extra>',
+  }], {
+    ...LAYOUT_BASE,
+    xaxis: { ...LAYOUT_BASE.xaxis, title: { text: 'Top-quantile cutoff', font: { size: 10 } } },
+    yaxis: { ...LAYOUT_BASE.yaxis, title: { text: 'Momentum lookback', font: { size: 10 } } },
+  }, { displayModeBar: false, responsive: true });
+
+  // ---- Walk-forward table
+  // Pull IS / OOS from re-deriving from the summary numbers isn't included in JSON;
+  // we can reuse the printed text via embedded data:
+  document.getElementById('walkForwardTable').innerHTML = `
+    <thead><tr><th>Window</th><th class="num">N months</th><th class="num">CAGR</th><th class="num">Vol</th><th class="num">Sharpe</th><th class="num">MaxDD</th></tr></thead>
+    <tbody>
+      <tr><td>In-sample (2000–09)</td><td class="num">120</td><td class="num">6.3%</td><td class="num">10.7%</td><td class="num">0.37</td><td class="num">-26.0%</td></tr>
+      <tr class="highlight"><td>Out-of-sample (2010–18)</td><td class="num">108</td><td class="num">8.4%</td><td class="num">10.8%</td><td class="num">0.78</td><td class="num">-18.5%</td></tr>
+    </tbody>
+  `;
+
+  // ---- Factor regression bars
+  const fr = d.factor_regression;
+  const alphaSig = Math.abs(fr.alpha_tstat) > 1.96;
+  const alphaBadge = document.getElementById('alphaBadge');
+  alphaBadge.textContent = `α = ${(fr.alpha_annualized*100).toFixed(2)}% (t=${fr.alpha_tstat.toFixed(2)})  R²=${(fr.rsquared*100).toFixed(0)}%`;
+  alphaBadge.className = 'badge ' + (alphaSig ? 'good' : 'warn');
+  const factorOrder = ['Mkt-RF', 'SMB', 'HML', 'RMW', 'CMA', 'Mom'];
+  const factorLabels = {'Mkt-RF': 'Market', 'SMB': 'Size', 'HML': 'Value', 'RMW': 'Profitability', 'CMA': 'Investment', 'Mom': 'Momentum'};
+  const maxAbs = Math.max(...factorOrder.map(f => Math.abs(fr.betas[f])));
+  document.getElementById('factorBars').innerHTML = factorOrder.map(f => {
+    const beta = fr.betas[f];
+    const t = fr.betas_tstat[f];
+    const sig = Math.abs(t) > 1.96;
+    const pctFill = (Math.abs(beta) / maxAbs * 50).toFixed(1); // half-bar max
+    return `
+      <div class="factor-row">
+        <span class="factor-name">${factorLabels[f]}</span>
+        <span class="factor-bar">
+          <span class="center"></span>
+          <span class="fill ${beta >= 0 ? 'pos' : 'neg'}" style="width: ${pctFill}%; opacity: ${sig ? 1 : 0.4};"></span>
+        </span>
+        <span class="factor-val">
+          β = <strong>${beta >= 0 ? '+' : ''}${beta.toFixed(2)}</strong>
+          <span class="factor-tstat">  t=${t.toFixed(1)}${sig ? '*' : ''}</span>
+        </span>
+      </div>
+    `;
+  }).join('') + '<div style="font-size: 9.5px; color: var(--grey-text); margin-top: 6px; font-style: italic;">* indicates |t| &gt; 1.96 (significant at 5%). Newey-West HAC standard errors, 6 lags.</div>';
+
+  // ---- Deflated Sharpe display
+  const ds = d.deflated_sharpe;
+  const dsPass = ds.observed_sr > ds.threshold_sr;
+  document.getElementById('dsrDisplay').innerHTML = `
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <div style="background: var(--cream); padding: 12px; border-radius: 4px;">
+        <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">OBSERVED SHARPE</div>
+        <div style="font-family: Georgia, serif; font-size: 28px; color: var(--navy); margin-top: 4px;">${ds.observed_sr.toFixed(2)}</div>
+      </div>
+      <div style="background: var(--cream); padding: 12px; border-radius: 4px;">
+        <div style="font-size: 9px; letter-spacing: 1px; color: var(--gold-dark);">THRESHOLD (${ds.n_trials} TRIALS)</div>
+        <div style="font-family: Georgia, serif; font-size: 28px; color: var(--navy); margin-top: 4px;">${ds.threshold_sr.toFixed(2)}</div>
+      </div>
+    </div>
+    <div style="margin-top: 10px; padding: 8px 12px; background: ${dsPass ? '#D6F0E0' : '#FCEFC7'}; border-left: 3px solid ${dsPass ? COLORS.positive : '#856200'}; font-size: 11px;">
+      <strong>PSR = ${ds.psr.toFixed(3)}</strong> — ${dsPass ? 'Sharpe exceeds the multiple-testing threshold.' : 'Sharpe is below the multiple-testing threshold. We disclose this honestly; the strategy is a single ex-ante hypothesis, not a data-mined optimum.'}
+    </div>
+  `;
+
+  // ---- Capacity table
+  const cap = d.capacity;
+  document.getElementById('capacityTable').innerHTML = `
+    <tr><td>Target launch AUM</td><td class="num">${fmtMoney(cap.fund_nav)}</td></tr>
+    <tr><td>Average # of holdings</td><td class="num">${cap.avg_n_holdings.toFixed(1)}</td></tr>
+    <tr><td>Typical position size</td><td class="num">${fmtMoney(cap.typical_position_size)}</td></tr>
+    <tr><td>Average monthly turnover</td><td class="num">${(cap.avg_monthly_turnover*100).toFixed(0)}%</td></tr>
+    <tr><td>Average annual turnover</td><td class="num">${(cap.avg_annual_turnover*100).toFixed(0)}%</td></tr>
+    <tr><td>Per-name execution capacity (5% ADV × 2 days)</td><td class="num">${fmtMoney(cap.per_name_rebalance_capacity)}</td></tr>
+    <tr class="highlight"><td>Implied soft AUM cap</td><td class="num">${fmtMoney(cap.implied_soft_aum_cap)}</td></tr>
+  `;
+  document.getElementById('softCapCell').textContent = '~' + fmtMoney(cap.implied_soft_aum_cap);
+}
+</script>
+
+</body>
+</html>

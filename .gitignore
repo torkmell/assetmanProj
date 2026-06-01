@@ -1,0 +1,35 @@
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Local logs and runtime artifacts
+*.log
+server.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jupyter
+.jupyter/
+
+# Optional: uncomment if you want to keep the yfinance data cache out of git
+# (it can be re-pulled by running pull_data.py)
+# data_cache/
