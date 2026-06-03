@@ -1,0 +1,77 @@
+{
+  "option2_haircut": [
+    {
+      "haircut": 0.0,
+      "CAGR": 0.12259352966572323,
+      "Vol": 0.10862245899041377,
+      "Sharpe": 1.0333898461553077,
+      "MaxDD": -0.26446004740319595,
+      "Alpha": 0.03653448568825739,
+      "Alpha_t": 3.9332573131523993
+    },
+    {
+      "haircut": 0.01,
+      "CAGR": 0.11152022251680771,
+      "Vol": 0.10862245899041377,
+      "Sharpe": 0.9415539561367571,
+      "MaxDD": -0.2743998023703845,
+      "Alpha": 0.026534485688257364,
+      "Alpha_t": 2.8566697441595768
+    },
+    {
+      "haircut": 0.02,
+      "CAGR": 0.10054711419005624,
+      "Vol": 0.10862245899041377,
+      "Sharpe": 0.8497180661182064,
+      "MaxDD": -0.2842135345012142,
+      "Alpha": 0.016534485688257376,
+      "Alpha_t": 1.780082175166758
+    },
+    {
+      "haircut": 0.03,
+      "CAGR": 0.08967337983633716,
+      "Vol": 0.10862245899041377,
+      "Sharpe": 0.7578821760996557,
+      "MaxDD": -0.2939027362215416,
+      "Alpha": 0.006534485688257353,
+      "Alpha_t": 0.7034946061739357
+    }
+  ],
+  "spy": {
+    "CAGR": 0.10035204180815982,
+    "Vol": 0.15092159665772567,
+    "Sharpe": 0.6472204605625563,
+    "MaxDD": -0.5078481492657865,
+    "Alpha": -0.005120039630058486,
+    "Alpha_t": -2.0541207642616297
+  },
+  "option3_etf_free": {
+    "CAGR": 0.06984173077464173,
+    "Vol": 0.0946398301158641,
+    "Sharpe": 0.6598367142745034,
+    "MaxDD": -0.21873743182547367,
+    "Alpha": -0.01574796027437501,
+    "Alpha_t": -1.544089613466996,
+    "universe": "9 SPDR sector ETFs (survivorship-free)",
+    "note": "thin breadth; validates overlay only"
+  },
+  "option3_industries_free": {
+    "CAGR": 0.07797707534284837,
+    "Vol": 0.10202774541988306,
+    "Sharpe": 0.6682111143702127,
+    "MaxDD": -0.25267005359268335,
+    "Alpha": 0.0009927693400486044,
+    "Alpha_t": 0.08776082164210207,
+    "universe": "Ken French 30 industries (survivorship-free)",
+    "window": "2002-2018 (data vintage)",
+    "spy_same_window": {
+      "CAGR": 0.06764774339700841,
+      "Vol": 0.14129209476836546,
+      "Sharpe": 0.44828741197445565,
+      "MaxDD": -0.5078481492657865,
+      "Alpha": -0.004770937854223876,
+      "Alpha_t": -1.817371544129247
+    },
+    "interpretation": "Overlay/risk edge survivorship-free (beats SPY on Sharpe & drawdown); stock-level FF5+MOM alpha not reproduced at industry granularity."
+  }
+}

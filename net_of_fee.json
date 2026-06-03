@@ -1,0 +1,30 @@
+{
+  "terms": {
+    "management_fee": "1.0% per annum (accrued monthly)",
+    "performance_fee": "15% of returns above the S&P 500 (SPY)",
+    "high_water_mark": "Yes (relative; only charged on new highs vs benchmark)",
+    "crystallisation": "Annual",
+    "liquidity": "Monthly, no lockup",
+    "basis": "Performance fee on benchmark-relative outperformance only \u2014 not on market beta"
+  },
+  "gross": {
+    "CAGR": 0.12259352966572323,
+    "Vol": 0.10879098624281115,
+    "Sharpe": 1.0357288177451747,
+    "MaxDD": -0.26446004740319595
+  },
+  "net": {
+    "CAGR": 0.10704188885821253,
+    "Vol": 0.10917086366259232,
+    "Sharpe": 0.9037031463437782,
+    "MaxDD": -0.30056317232072716
+  },
+  "spy": {
+    "CAGR": 0.10035204180815982,
+    "Vol": 0.15114845165857146,
+    "Sharpe": 0.650606700237621,
+    "MaxDD": -0.5078481492657865
+  },
+  "fee_drag_cagr": 0.015551640807510703,
+  "net_vs_spy_cagr": 0.006689847050052711
+}
