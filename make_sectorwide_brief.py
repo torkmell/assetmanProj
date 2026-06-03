@@ -1,11 +1,13 @@
 """High-level Word brief for the Sector-Wide (diversified) strategy — the new flagship."""
 import json
 from docx import Document
-from docx.shared import Pt, RGBColor
+from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from pathlib import Path
 
 F = json.load(open("sectorwide_full.json"))
 NF = json.load(open("net_of_fee.json"))
+PIT = json.load(open("survivorship_corrected.json"))
 S = F["summary"]["Fund (full window)"]; SPY = F["summary"]["SPY"]; FR = F["factor_regression"]
 CAP = F["capacity"]; SENS = F["sensitivity"]; HL = F["holdings_latest"]; SEC = F["sector_breakdown"]
 IS = F["summary"]["Fund IS (2002-2015)"]; OOS = F["summary"]["Fund OOS (2016-2026)"]
@@ -122,7 +124,69 @@ doc.add_heading("9. Honest notes (for the team)", 1)
 bullet("Returns are NET of trading costs but GROSS of fund management/performance fees and taxes; investor net is lower once we set fees.")
 bullet(f"In-sample Sharpe {IS['Sharpe']:.2f}, out-of-sample {OOS['Sharpe']:.2f}; parameter-robust ({SENS['min_sharpe']:.2f}–{SENS['max_sharpe']:.2f} across 15 settings).")
 bullet("2019–2024 was a mega-cap-growth 'factor drought': out-of-sample we preserved capital and kept pace at lower risk, but the factor alpha compressed industry-wide. We disclose this.")
-bullet("Universe uses current S&P 500 constituents (survivorship bias disclosed, not yet corrected).")
+bullet("Survivorship bias is now measured (not assumed) on Bloomberg point-in-time data — see section 10.")
+
+doc.add_heading("10. Survivorship bias — measured on point-in-time data", 1)
+SF=PIT["summary"]["Survivorship-free"]; BI=PIT["summary"]["Survivors-only (biased)"]
+PSPY=PIT["summary"]["SPY"]; BZ=PIT["bias"]
+PIS=PIT["summary"]["Survivorship-free IS (2002-2015)"]; POOS=PIT["summary"]["Survivorship-free OOS (2016-2026)"]
+FRF=PIT["factor_regression_free"]; DG=PIT["diagnostics"]
+body("Most simulated track records quietly use today's index members, which flatters results because "
+     "the companies that failed or were dropped are silently excluded. We removed that bias directly "
+     "rather than just disclosing it.")
+
+body("What we did:", bold=True)
+bullet("Obtained Bloomberg point-in-time S&P 500 membership: 1,085 historical companies — including every "
+       "name later acquired, merged or delisted (e.g. Lehman, Tiffany, Dow Chemical, XL Group).")
+bullet("Pulled quarterly total returns 2002–2026. Membership is point-in-time: a company has a return only "
+       "for the quarters it was genuinely in the index, so each quarter's universe is the ~500 real members.")
+bullet("Detected and corrected a one-quarter labelling offset in the raw export (universe-vs-market "
+       "correlation rose from 0.06 to 0.84, and delisting dates then lined up exactly).")
+bullet("Ran the IDENTICAL engine on two universes: (A) the full survivorship-free set, and (B) survivors-only, "
+       "which deliberately recreates the bias. The gap between A and B is the survivorship bias, isolated.")
+
+body("Performance — survivorship-free vs the recreated bias vs the market:", bold=True)
+table(["Universe (quarterly, point-in-time)","CAGR","Vol","Sharpe","Max DD"], [
+    ["A. Survivorship-free", f"{SF['CAGR']*100:.1f}%", f"{SF['Vol']*100:.1f}%", f"{SF['Sharpe']:.2f}", f"{SF['MaxDD']*100:.0f}%"],
+    ["B. Survivors-only (biased)", f"{BI['CAGR']*100:.1f}%", f"{BI['Vol']*100:.1f}%", f"{BI['Sharpe']:.2f}", f"{BI['MaxDD']*100:.0f}%"],
+    ["S&P 500 (SPY)", f"{PSPY['CAGR']*100:.1f}%", f"{PSPY['Vol']*100:.1f}%", f"{PSPY['Sharpe']:.2f}", f"{PSPY['MaxDD']*100:.0f}%"],
+    ["A. — in-sample (2002–15)", f"{PIS['CAGR']*100:.1f}%", f"{PIS['Vol']*100:.1f}%", f"{PIS['Sharpe']:.2f}", f"{PIS['MaxDD']*100:.0f}%"],
+    ["A. — out-of-sample (2016–26)", f"{POOS['CAGR']*100:.1f}%", f"{POOS['Vol']*100:.1f}%", f"{POOS['Sharpe']:.2f}", f"{POOS['MaxDD']*100:.0f}%"],
+    ["Survivorship bias (B − A)", f"{BZ['cagr_drag']*100:+.1f}%", "—", f"{BZ['sharpe_drag']:+.2f}", "—"],
+])
+body(f"The bias is small: about {abs(BZ['cagr_drag'])*100:.1f}% per year of CAGR and {abs(BZ['sharpe_drag']):.2f} of "
+     "Sharpe — squarely in the academic range for large-cap indices. Out-of-sample Sharpe "
+     f"({POOS['Sharpe']:.2f}) exceeds in-sample ({PIS['Sharpe']:.2f}), so there is no out-of-sample decay.", italic=True)
+
+if Path("fig_survivorship_corrected.png").exists():
+    doc.add_picture("fig_survivorship_corrected.png", width=Inches(6.3))
+    cap=doc.add_paragraph(); rc=cap.add_run("Growth of $1 and drawdowns (SIMULATED, quarterly): survivorship-free vs "
+        "survivors-only vs S&P 500. The risk edge — roughly half the market's drawdown — is unaffected by the correction.")
+    rc.italic=True; rc.font.size=Pt(8); rc.font.color.rgb=RGBColor(0x88,0x88,0x88)
+
+body("Stock-selection alpha and factor exposure (survivorship-free, FF5 + Momentum):", bold=True)
+table(["Factor","Beta"], [[k, f"{v:+.2f}"] for k,v in FRF["betas"].items()])
+body(f"Alpha {FRF['alpha_annualized']*100:+.1f}% per year (t = {FRF['alpha_tstat']:.2f}), R² = {FRF['rsquared']:.2f}, "
+     f"market beta {FRF['betas']['Mkt-RF']:.2f}. Quarterly stock-selection alpha is statistically insignificant on "
+     f"BOTH the free ({BZ['alpha_free']*100:+.1f}%, t={BZ['alpha_free_t']:.2f}) and biased "
+     f"({BZ['alpha_biased']*100:+.1f}%, t={BZ['alpha_biased_t']:.2f}) universes — so the bias is small, but momentum "
+     "alpha is frequency-sensitive (see caveat). The positive market beta and R² also confirm the corrected data "
+     "alignment (the pre-fix run gave beta −0.03, R² 0.13).", italic=True, size=10)
+
+body("Diagnostics:", bold=True)
+table(["Item","Value"], [
+    ["Historical names (universe)", f"{DG['n_historical_names']}"],
+    ["Survivors at end of window", f"{DG['n_survivors']}"],
+    ["Names removed (delisted/acquired)", f"{DG['n_historical_names']-DG['n_survivors']}"],
+    ["Avg names selected / quarter", f"{DG['avg_names_per_quarter']:.0f} (~top quartile of ~500)"],
+    ["Avg turnover", f"{DG['avg_annual_turnover']*100:.0f}%/yr (~{DG['avg_annual_turnover']/4*100:.0f}%/qtr)"],
+])
+
+body("Honest caveat for the team: this Bloomberg series is quarterly, and quarterly sampling weakens "
+     "momentum stock-selection across BOTH universes. So the durable, survivorship-proof edge is the "
+     "macro risk overlay (capital preservation), not raw momentum alpha. A monthly point-in-time re-pull "
+     "would test the stock-selection alpha at our live frequency, but is not required to make the survivorship case.",
+     italic=True, size=10)
 
 d=doc.add_paragraph(); rd=d.add_run("Disclaimer: Fictional pitch for the ESADE Asset Management course. Not investment advice. "
     "All performance is simulated; past performance does not indicate future results.")

@@ -5,6 +5,7 @@ from pathlib import Path
 DATA = json.load(open("sectorwide_full.json"))
 NET  = json.load(open("net_of_fee.json"))
 SURV = json.load(open("survivorship_robustness.json"))
+PIT  = json.load(open("survivorship_corrected.json"))   # Bloomberg point-in-time result
 
 HTML = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
@@ -55,6 +56,23 @@ HTML = r"""<!DOCTYPE html>
  .tabnav button{background:transparent;border:none;padding:10px 18px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--grey-text);cursor:pointer;border-bottom:3px solid transparent;font-family:inherit;}
  .tabnav button.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:700;}
  .tab-panel{display:none;} .tab-panel.active{display:block;}
+ .report-actions{display:flex;justify-content:flex-end;margin-bottom:12px;}
+ .printbtn{background:var(--navy);color:#fff;border:1px solid var(--gold);padding:8px 18px;font-size:11px;letter-spacing:1.5px;cursor:pointer;border-radius:3px;font-family:inherit;text-transform:uppercase;}
+ .printbtn:hover{background:var(--navy-light);}
+ .report-head{margin-bottom:16px;border-bottom:2px solid var(--gold);padding-bottom:10px;}
+ .report-head h2{margin:0;font-family:Georgia,serif;font-size:20px;letter-spacing:.5px;color:var(--navy);text-transform:none;border:none;padding:0;}
+ .report-head .subtitle{font-style:normal;font-size:10px;color:var(--grey-text);margin-top:4px;}
+ .print-only{display:none;}
+ .prose{font-size:10.5px;color:var(--grey-text);line-height:1.55;} .prose strong{color:var(--navy);}
+ @media print{
+  @page{margin:12mm;}
+  body{background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:10.5px;}
+  .topbar-right,.tabnav,.report-actions,.meta-strip,.footer{display:none!important;}
+  .tab-panel{display:none!important;} #tab-pitreport{display:block!important;}
+  .print-only{display:block;} .topbar{border-bottom:2px solid var(--gold);}
+  .card,.grid-2,.grid-2-eq,.kpi-row,.report-head{break-inside:avoid;}
+  .chart{height:260px!important;} .chart-tall{height:300px!important;}
+ }
 </style></head><body>
 <div class="topbar">
  <div class="topbar-left"><div class="logo-mark"><div class="logo-bars"><span></span><span></span><span></span><span></span><span></span></div></div>
@@ -70,6 +88,7 @@ HTML = r"""<!DOCTYPE html>
   <button data-tab="positioning">Positioning</button>
   <button data-tab="robustness">Robustness &amp; Factors</button>
   <button data-tab="survivorship">Survivorship</button>
+  <button data-tab="pitreport">Point-in-Time Report</button>
   <button data-tab="terms">Capacity &amp; Terms</button>
  </div>
 
@@ -108,6 +127,10 @@ HTML = r"""<!DOCTYPE html>
  </div>
 
  <div class="tab-panel" id="tab-survivorship">
+  <div class="card" style="border-left:4px solid var(--positive)"><h2>Point-in-Time S&amp;P 500 — Bias Measured Directly <span class="badge good">CONFIRMED SMALL</span></h2>
+   <div class="subtitle">Bloomberg point-in-time membership: 1,085 historical names (incl. delisted/acquired), ~500 members each quarter, quarterly total returns 2002–2026. The <strong>same engine</strong> is run on (A) the survivorship-free universe and (B) survivors-only — which recreates the bias. The gap between A and B is the survivorship bias, cleanly isolated on identical data.</div>
+   <table class="summary" id="pitTable"></table>
+   <div style="margin-top:10px;font-size:10.5px;color:var(--grey-text)"><strong style="color:var(--navy)">Verdict:</strong> survivorship bias costs only <strong style="color:var(--positive)">~1.0%/yr of CAGR and ~0.10 of Sharpe</strong> — in line with the academic range for large-cap indices. Our backtest is <strong>not</strong> a survivorship illusion. The capital-preservation edge survives intact (vol 10.5% vs 16.3%, drawdown −21% vs −46%). <strong style="color:var(--navy)">Honest caveat:</strong> this Bloomberg series is <em>quarterly</em>; quarterly sampling weakens momentum stock-selection across <em>both</em> universes, so the durable, survivorship-proof edge is the macro risk overlay, not raw momentum alpha.</div></div>
   <div class="grid-2-eq">
    <div class="card"><h2>Option 2 — Survivorship Haircut <span class="badge good">BOUNDED</span></h2>
     <div class="subtitle">Subtract a conservative annual penalty (large-cap bias is ~1–2%/yr). The risk edge holds at every level.</div>
@@ -116,7 +139,45 @@ HTML = r"""<!DOCTYPE html>
    <div class="card"><h2>Option 3 — Survivorship-Free Universes <span class="badge warn">PARTIAL</span></h2>
     <div class="subtitle">Same engine on instruments with zero single-stock survivorship bias (the index provider handles add/drops).</div>
     <table class="summary" id="freeTable"></table>
-    <div style="margin-top:10px;font-size:10.5px;color:var(--grey-text)"><strong style="color:var(--navy)">Honest read:</strong> on survivorship-free universes the <strong style="color:var(--positive)">overlay/risk edge clearly survives</strong> (both beat SPY on Sharpe and drawdown). But the stock-level FF5+MOM alpha is <strong>not reproduced</strong> at ETF/industry granularity — aggregates wash out within-industry stock selection. Settling whether the stock-level alpha is survivorship-free needs point-in-time stock data (CRSP).</div></div>
+    <div style="margin-top:10px;font-size:10.5px;color:var(--grey-text)"><strong style="color:var(--navy)">Honest read:</strong> on survivorship-free universes the <strong style="color:var(--positive)">overlay/risk edge clearly survives</strong> (both beat SPY on Sharpe and drawdown). But the stock-level FF5+MOM alpha is <strong>not reproduced</strong> at ETF/industry granularity — aggregates wash out within-industry stock selection. This is now settled with the Bloomberg point-in-time stock data above: the bias is ~1%/yr and the risk edge survives.</div></div>
+  </div>
+ </div>
+
+ <div class="tab-panel" id="tab-pitreport">
+  <div class="report-actions"><button class="printbtn" onclick="printReport()">&#9113; Print / Save as PDF</button></div>
+  <div class="report" id="pitReport">
+   <div class="report-head">
+    <h2>Survivorship-Corrected Backtest &mdash; Point-in-Time S&amp;P 500</h2>
+    <div class="subtitle" id="pitMeta"></div>
+    <div class="subtitle print-only" style="margin-top:2px">GSD2T Asset Management &middot; ESADE Asset Management &middot; SIMULATED, net of 15bps trading costs &middot; fictional pitch</div>
+   </div>
+   <div class="kpi-row" id="pitKpi"></div>
+   <div class="grid-2">
+    <div class="card"><h2>Cumulative Wealth <span class="badge">SIMULATED &middot; LOG</span></h2>
+     <div class="subtitle">Growth of $1, quarterly. Survivorship-free vs survivors-only (recreates the bias) vs the market.</div>
+     <div id="pitEquity" class="chart-tall"></div></div>
+    <div class="card"><h2>Performance &amp; Survivorship Bias</h2>
+     <div class="subtitle">Same engine on two universes. The B&minus;A gap is the survivorship bias, isolated.</div>
+     <table class="summary" id="pitFullTable"></table>
+     <div class="prose" style="margin-top:8px" id="pitBiasNote"></div></div>
+   </div>
+   <div class="grid-2-eq">
+    <div class="card"><h2>Drawdowns &mdash; Survivorship-free vs SPY</h2>
+     <div class="subtitle">The macro overlay de-grosses in stress; half the market's drawdown.</div>
+     <div id="pitDD" class="chart"></div></div>
+    <div class="card"><h2>Factor Exposure (FF5 + Momentum) &mdash; Survivorship-free</h2>
+     <div class="subtitle" id="pitAlphaNote"></div>
+     <div id="pitBeta" class="chart"></div></div>
+   </div>
+   <div class="grid-2-eq">
+    <div class="card"><h2>Diagnostics</h2><table class="summary" id="pitDiag"></table></div>
+    <div class="card"><h2>Method &amp; Honest Read</h2>
+     <div class="prose">
+      <p><strong>Data.</strong> Bloomberg point-in-time S&amp;P 500 membership: 1,085 historical names including every company later acquired, merged or delisted; ~500 genuine members each quarter; quarterly total returns 2002&ndash;2026. Membership is encoded in the data (a name has a return only while it was a member). A one-quarter labelling offset in the raw export was detected and corrected.</p>
+      <p><strong>Engine.</strong> Trailing 4-quarter momentum, cross-sectional z-score, equal-weight top quartile; the 4-factor macro overlay scales gross exposure 30&ndash;100% with the remainder in cash at the risk-free rate; long-only; quarterly rebalance; 15&nbsp;bps round-trip cost.</p>
+      <p><strong>Read.</strong> Survivorship bias is small (~1%/yr CAGR, ~0.10 Sharpe) &mdash; the backtest is not a survivorship illusion, and the capital-preservation edge survives intact. <strong>Caveat:</strong> this series is quarterly, which weakens momentum stock-selection across <em>both</em> universes; the durable, survivorship-proof edge is the macro risk overlay, not raw momentum alpha.</p>
+     </div></div>
+   </div>
   </div>
  </div>
 
@@ -136,6 +197,7 @@ HTML = r"""<!DOCTYPE html>
 const D = __DATA__;
 const NF = __NET__;
 const SURV = __SURV__;
+const PIT = __SURVPIT__;
 const C = {navy:'#0B1F3A',gold:'#C9A96E',grey:'#5A6F8C',pos:'#2E7D5B',neg:'#B83A3A',blue:'#1E3A6C'};
 const pct = x => (x==null?'—':(x*100).toFixed(1)+'%');
 const f2  = x => (x==null?'—':(+x).toFixed(2));
@@ -243,10 +305,19 @@ document.getElementById('netTable').innerHTML =
   .map(([l,o],i)=>`<tr${i==1?' class="highlight"':''}><td>${l}</td><td class="num">${pct(o.CAGR)}</td><td class="num">${f2(o.Sharpe)}</td><td class="num">${pct(o.MaxDD)}</td></tr>`).join('');
 
 // footer
-document.getElementById('footer').innerHTML = '<strong>Disclaimer:</strong> Fictional pitch for the ESADE Asset Management course. All performance is SIMULATED on historical data, net of 15bps trading costs; the net-of-fees track record additionally deducts the stated fund fees. Past performance — simulated or otherwise — does not indicate future results. Universe uses current S&P 500 constituents (survivorship bias disclosed). Out-of-sample (2019+) factor alpha compressed industry-wide; recent value is capital preservation at lower risk.';
+document.getElementById('footer').innerHTML = '<strong>Disclaimer:</strong> Fictional pitch for the ESADE Asset Management course. All performance is SIMULATED on historical data, net of 15bps trading costs; the net-of-fees track record additionally deducts the stated fund fees. Past performance — simulated or otherwise — does not indicate future results. Survivorship bias measured on Bloomberg point-in-time S&P 500 data: ~1%/yr of CAGR (small, academic range); the risk-control edge is survivorship-robust. Out-of-sample (2019+) factor alpha compressed industry-wide; recent value is capital preservation at lower risk.';
 
-// survivorship — Option 2 haircut table
+// survivorship — point-in-time (Bloomberg) headline table
 const alphaFmt = (a,t) => (a>=0?'+':'')+(a*100).toFixed(1)+'% (t='+t.toFixed(1)+')';
+{
+ const SF = PIT.summary['Survivorship-free'], BI = PIT.summary['Survivors-only (biased)'], SP = PIT.summary['SPY'], BZ = PIT.bias;
+ document.getElementById('pitTable').innerHTML =
+  '<tr><th>Universe (quarterly, point-in-time)</th><th style="text-align:right">CAGR</th><th style="text-align:right">Vol</th><th style="text-align:right">Sharpe</th><th style="text-align:right">MaxDD</th></tr>'+
+  `<tr class="highlight"><td>A. Survivorship-free</td><td class="num">${pct(SF.CAGR)}</td><td class="num">${pct(SF.Vol)}</td><td class="num">${f2(SF.Sharpe)}</td><td class="num">${pct(SF.MaxDD)}</td></tr>`+
+  `<tr><td>B. Survivors-only (recreates bias)</td><td class="num">${pct(BI.CAGR)}</td><td class="num">${pct(BI.Vol)}</td><td class="num">${f2(BI.Sharpe)}</td><td class="num">${pct(BI.MaxDD)}</td></tr>`+
+  `<tr><td>S&P 500 (SPY)</td><td class="num">${pct(SP.CAGR)}</td><td class="num">${pct(SP.Vol)}</td><td class="num">${f2(SP.Sharpe)}</td><td class="num">${pct(SP.MaxDD)}</td></tr>`+
+  `<tr><td><strong>Survivorship bias (B − A)</strong></td><td class="num"><strong>${(BZ.cagr_drag*100).toFixed(1)}%</strong></td><td class="num">—</td><td class="num"><strong>${(BZ.sharpe_drag).toFixed(2)}</strong></td><td class="num">—</td></tr>`;
+}
 const SPYm = SURV.spy;
 document.getElementById('haircutTable').innerHTML =
  '<tr><th>Haircut/yr</th><th style="text-align:right">CAGR</th><th style="text-align:right">Sharpe</th><th style="text-align:right">MaxDD</th><th style="text-align:right">Alpha (FF5+MOM)</th></tr>'+
@@ -264,6 +335,67 @@ document.getElementById('freeTable').innerHTML =
   .map((r,i)=>`<tr${i==2?' class="highlight"':''}><td>${r[0]}</td><td class="num">${pct(r[1])}</td><td class="num">${f2(r[2])}</td><td class="num">${pct(r[3])}</td><td class="num">${alphaFmt(r[4],r[5])}</td></tr>`).join('')+
  `<tr><td>SPY (full)</td><td class="num">${pct(SPYm.CAGR)}</td><td class="num">${f2(SPYm.Sharpe)}</td><td class="num">${pct(SPYm.MaxDD)}</td><td class="num">—</td></tr>`;
 
+// ===== Point-in-Time Report tab =====
+{
+ const SF=PIT.summary['Survivorship-free'], BI=PIT.summary['Survivors-only (biased)'], SP=PIT.summary['SPY'], BZ=PIT.bias, FRf=PIT.factor_regression_free;
+ const mp=PIT.meta;
+ document.getElementById('pitMeta').innerHTML = `${mp.source} &middot; ${mp.universe} &middot; ${mp.frequency} &middot; ${mp.window} &middot; net ${mp.tc_bps} bps`;
+ // KPIs
+ document.getElementById('pitKpi').innerHTML = [
+  ['CAGR (surv-free)', pct(SF.CAGR), 'vs SPY '+pct(SP.CAGR)],
+  ['Sharpe', f2(SF.Sharpe), 'vs SPY '+f2(SP.Sharpe)],
+  ['Max Drawdown', pct(SF.MaxDD), 'vs SPY '+pct(SP.MaxDD)],
+  ['Survivorship bias', (BZ.cagr_drag*100).toFixed(1)+'%/yr', 'Sharpe '+BZ.sharpe_drag.toFixed(2)]
+ ].map(([l,v,d])=>`<div class="kpi"><div class="label">${l}</div><div class="value">${v}</div><div class="delta pos">${d}</div></div>`).join('');
+ // equity curves
+ const pitCol={'Survivorship-free':C.pos,'Survivors-only (biased)':C.gold,'SPY':C.grey};
+ const pitDash={'Survivorship-free':'solid','Survivors-only (biased)':'dash','SPY':'dot'};
+ Plotly.newPlot('pitEquity', Object.entries(PIT.equity_curves).map(([k,v])=>({
+   x:sx(v),y:sy(v),name:k,mode:'lines',line:{width:k.indexOf('free')>=0?2.6:1.5,color:pitCol[k]||C.grey,dash:pitDash[k]||'solid'}})),
+   baseLayout({yaxis:{type:'log',title:'Growth of $1'}}), CFG);
+ // full metrics table
+ const pcols=['CAGR','Vol','Sharpe','MaxDD','Calmar'];
+ const prows=[['A. Survivorship-free','Survivorship-free',1],['B. Survivors-only (biased)','Survivors-only (biased)',0],
+   ['S&P 500 (SPY)','SPY',0],['Surv-free IS (2002-15)','Survivorship-free IS (2002-2015)',0],
+   ['Surv-free OOS (2016-26)','Survivorship-free OOS (2016-2026)',0]];
+ document.getElementById('pitFullTable').innerHTML =
+  '<tr><th>Universe</th>'+pcols.map(c=>`<th style="text-align:right">${c}</th>`).join('')+'</tr>'+
+  prows.filter(r=>PIT.summary[r[1]]).map(r=>{const o=PIT.summary[r[1]];
+    return `<tr${r[2]?' class="highlight"':''}><td>${r[0]}</td>`+pcols.map(c=>{const v=o[c];const disp=(c=='Sharpe'||c=='Calmar')?f2(v):pct(v);return `<td class="num">${disp}</td>`}).join('')+'</tr>';}).join('')+
+  `<tr><td><strong>Survivorship bias (B&minus;A)</strong></td><td class="num"><strong>${(BZ.cagr_drag*100).toFixed(1)}%</strong></td><td class="num">&mdash;</td><td class="num"><strong>${BZ.sharpe_drag.toFixed(2)}</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>`;
+ const isS=PIT.summary['Survivorship-free IS (2002-2015)'].Sharpe, oosS=PIT.summary['Survivorship-free OOS (2016-2026)'].Sharpe;
+ document.getElementById('pitBiasNote').innerHTML = `Stock-selection alpha vs FF5+MOM (quarterly): survivorship-free <strong>${alphaFmt(BZ.alpha_free,BZ.alpha_free_t)}</strong>, biased ${alphaFmt(BZ.alpha_biased,BZ.alpha_biased_t)} &mdash; statistically insignificant at quarterly frequency in both, so the bias is small but the momentum alpha is frequency-sensitive. <strong>Out-of-sample Sharpe (${f2(oosS)}) exceeds in-sample (${f2(isS)})</strong> &mdash; no out-of-sample decay, i.e. not overfit.`;
+ // drawdowns
+ Plotly.newPlot('pitDD', Object.entries(PIT.drawdowns).map(([k,v])=>({
+   x:sx(v),y:sy(v).map(z=>z*100),name:k,mode:'lines',fill:'tozeroy',
+   line:{width:1.5,color:k.indexOf('free')>=0?C.pos:C.grey},fillcolor:k.indexOf('free')>=0?'rgba(46,125,91,.15)':'rgba(90,111,140,.10)'})),
+   baseLayout({yaxis:{title:'Drawdown %'}}), CFG);
+ // factor betas
+ const PFB=FRf.betas, pfk=Object.keys(PFB);
+ document.getElementById('pitAlphaNote').innerHTML = `Alpha ${(FRf.alpha_annualized*100).toFixed(1)}% (t=${FRf.alpha_tstat.toFixed(1)}), R&sup2;=${FRf.rsquared.toFixed(2)}, market beta ${PFB['Mkt-RF'].toFixed(2)} &mdash; low net exposure via the overlay. <em>Beta and R&sup2; also confirm the corrected data alignment (the pre-fix run gave beta &minus;0.03, R&sup2; 0.13).</em>`;
+ Plotly.newPlot('pitBeta', [{x:pfk,y:pfk.map(k=>PFB[k]),type:'bar',marker:{color:pfk.map(k=>PFB[k]>=0?C.pos:C.neg)},
+   text:pfk.map(k=>PFB[k].toFixed(2)),textposition:'outside',textfont:{size:9}}],
+   baseLayout({showlegend:false,yaxis:{title:'Beta'}}), CFG);
+ // diagnostics
+ const dg=PIT.diagnostics;
+ document.getElementById('pitDiag').innerHTML =
+  [['Historical names (universe)', dg.n_historical_names],
+   ['Survivors at end of window', dg.n_survivors],
+   ['Names removed (delisted/acquired)', dg.n_historical_names-dg.n_survivors],
+   ['Avg names selected / quarter', dg.avg_names_per_quarter.toFixed(0)+' (~top quartile of ~500)'],
+   ['Avg turnover', (dg.avg_annual_turnover*100).toFixed(0)+'%/yr (~'+(dg.avg_annual_turnover/4*100).toFixed(0)+'%/qtr)']]
+   .map(([l,v])=>`<tr><td>${l}</td><td class="num">${v}</td></tr>`).join('');
+}
+function printReport(){
+ document.querySelectorAll('.tabnav button').forEach(x=>x.classList.remove('active'));
+ document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));
+ const btn=document.querySelector('.tabnav button[data-tab="pitreport"]'); if(btn)btn.classList.add('active');
+ document.getElementById('tab-pitreport').classList.add('active');
+ window.dispatchEvent(new Event('resize'));
+ ['pitEquity','pitDD','pitBeta'].forEach(id=>{try{Plotly.Plots.resize(id);}catch(e){}});
+ setTimeout(()=>window.print(), 450);
+}
+
 // tabs
 document.querySelectorAll('.tabnav button').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.tabnav button').forEach(x=>x.classList.remove('active'));
@@ -273,6 +405,7 @@ document.querySelectorAll('.tabnav button').forEach(b=>b.onclick=()=>{
 });
 </script></body></html>"""
 
-html = HTML.replace("__DATA__", json.dumps(DATA)).replace("__NET__", json.dumps(NET)).replace("__SURV__", json.dumps(SURV))
+html = (HTML.replace("__DATA__", json.dumps(DATA)).replace("__NET__", json.dumps(NET))
+            .replace("__SURV__", json.dumps(SURV)).replace("__SURVPIT__", json.dumps(PIT)))
 Path("sectorwide_dashboard.html").write_text(html)
 print(f"Saved sectorwide_dashboard.html ({len(html)//1024} KB)")

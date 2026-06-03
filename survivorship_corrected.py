@@ -25,7 +25,7 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
 
-XLSX = "/Users/TorkelMellinO/Desktop/ESADE/Asset Management/Total Returns Hard Copy.xlsx"
+XLSX = Path(__file__).resolve().parent / "Total Returns Hard Copy.xlsx"   # bundled in the project
 CACHE = Path("data_cache"); DATA_ROOT = Path(__file__).resolve().parent/"course_data"
 TC_BPS = 15; Q = 0.25; LB = 4               # 4-quarter momentum
 START = "2002-03-31"; IS_END = "2015-12-31"; OOS_START = "2016-03-31"
