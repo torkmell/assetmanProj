@@ -103,9 +103,19 @@ print("4 overlay factors (equal-weighted), latest readings:")
 c.dropna().tail(3).round(2)""")
 
 md("## 4 · Strategy engine — V1 (select → overlay → defensive sleeve)")
-code("""# defensive sleeve return: Treasuries + gold (IEF as early fallback)
+code("""# risk-free rate (Ken French), loaded here so the defensive sleeve earns RF on early missing data,
+# matching the canonical flagship engine (build_v1_flagship.py) exactly.
+def load_ff():
+    ff5=pd.read_csv(DATA_ROOT/"Folder_Macro_Factors_.187814089"/"content"/"F-F_Research_Data_5_Factors_2x3_daily.CSV",skiprows=3,index_col=0)
+    ff5.columns=[x.strip() for x in ff5.columns]; ff5.index=pd.to_datetime(ff5.index.astype(str),format="%Y%m%d"); ff5/=100.0
+    mom=pd.read_csv(DATA_ROOT/"Folder_Macro_Factors_.187814089"/"content"/"F-F_Momentum_Factor_daily.CSV",skiprows=13,index_col=0,skipfooter=2,engine="python")
+    mom.columns=["Mom"]; mom=mom.dropna(); mom.index=pd.to_datetime(mom.index.astype(str).str.strip(),format="%Y%m%d",errors="coerce"); mom=mom.dropna()/100.0
+    m=(1+ff5.join(mom,how="inner")).resample("ME").prod()-1; m.index=me(m.index); return m
+ff=load_ff(); rf=ff["RF"]
+
+# defensive sleeve return: Treasuries + gold (IEF as early fallback); missing data earns RF, not 0 (flagship convention)
 dret=defv.pct_change(); ief_ret=macro_px["IEF"].pct_change()
-defensive_ret=dret.mean(axis=1).reindex(returns.index).fillna(ief_ret).fillna(0.0)
+defensive_ret=dret.mean(axis=1).reindex(returns.index).fillna(ief_ret).fillna(rf)
 
 # Layer 1 — selection: top-quartile momentum, equal weight
 sig=zcs(momentum(returns)); mask=(sig.rank(axis=1,pct=True)>=0.75).astype(float)
@@ -123,15 +133,7 @@ ret=port.loc[START:prices.index[-1]]
 print(f"V1 backtest computed: {len(ret)} months, {ret.index.min():%Y-%m} to {ret.index.max():%Y-%m} (SIMULATED, net 15 bps)")""")
 
 md("## 5 · Headline results — CAGR, vol, Sharpe, max drawdown, turnover")
-code("""def load_ff():
-    ff5=pd.read_csv(DATA_ROOT/"Folder_Macro_Factors_.187814089"/"content"/"F-F_Research_Data_5_Factors_2x3_daily.CSV",skiprows=3,index_col=0)
-    ff5.columns=[x.strip() for x in ff5.columns]; ff5.index=pd.to_datetime(ff5.index.astype(str),format="%Y%m%d"); ff5/=100.0
-    mom=pd.read_csv(DATA_ROOT/"Folder_Macro_Factors_.187814089"/"content"/"F-F_Momentum_Factor_daily.CSV",skiprows=13,index_col=0,skipfooter=2,engine="python")
-    mom.columns=["Mom"]; mom=mom.dropna(); mom.index=pd.to_datetime(mom.index.astype(str).str.strip(),format="%Y%m%d",errors="coerce"); mom=mom.dropna()/100.0
-    m=(1+ff5.join(mom,how="inner")).resample("ME").prod()-1; m.index=me(m.index); return m
-ff=load_ff(); rf=ff["RF"]
-
-def metrics(r):
+code("""def metrics(r):
     r=r.dropna(); cum=(1+r).cumprod(); n=len(r)
     cagr=cum.iloc[-1]**(12/n)-1; vol=r.std()*np.sqrt(12)
     ex=r-rf.reindex(r.index).fillna(0); sharpe=(ex.mean()*12)/(ex.std()*np.sqrt(12))
@@ -230,7 +232,9 @@ A natural challenge: *"why not run a concentrated book of 20–30 high-convictio
 - **Optimistic** = the monthly 12-1 engine on current members (same basis as the §5 headline).
 - **Survivorship-free / Survivors-only** = the matched **quarterly, point-in-time** engine from §8 (un-invested portion in cash).
 
-The **survivorship effect** is the *free-vs-biased gap within the quarterly engine* — shown explicitly below — and it is **small (~0.05–0.12 Sharpe, i.e. ~1%/yr, consistent with §8)**. The large *optimistic-vs-free* drop is mostly **monthly→quarterly frequency and the cash proxy, not survivorship**. So the ~0.5 levels are a clean-data **ranking instrument**, not the flagship's honest Sharpe.""")
+The **survivorship effect** is the *free-vs-biased gap within the quarterly engine* — shown explicitly below — and it is **small (~0.05–0.12 Sharpe, i.e. ~1%/yr, consistent with §8)**. The large *optimistic-vs-free* drop is mostly **monthly→quarterly frequency and the cash proxy, not survivorship**. So the ~0.5 levels are a clean-data **ranking instrument**, not the flagship's honest Sharpe.
+
+*Cross-check (transparency): §8's headline survivorship test reads the quartile at ~0.51 Sharpe; the grid below reads it at 0.54. The ~0.03 difference is two independent point-in-time implementations (`survivorship_corrected.py` vs `concentration_survivorship.py`) — both land at ~0.5 and both are the quarterly proxy, not the flagship. We keep both rather than force one number, and the ranking argument is unaffected.*""")
 code("""import json
 CV=json.load(open("concentration_v1.json")); CS=json.load(open("concentration_survivorship.json"))
 levels=[("Top 25 names (high-conviction)","Top 25 names","Top 25 (high-conviction)"),
