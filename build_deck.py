@@ -14,6 +14,8 @@ from pptx.enum.shapes import MSO_SHAPE
 
 V=json.load(open("v1_flagship.json")); F=json.load(open("sectorwide_full.json"))
 PIT=json.load(open("survivorship_corrected.json")); BV=json.load(open("bakeoff_variants.json")); BW=json.load(open("bakeoff_improvements.json"))
+CV=json.load(open("concentration_v1.json")); CS=json.load(open("concentration_survivorship.json"))
+RB=json.load(open("robustness_assumptions.json"))
 S=V["summary"]["Fund (full)"]; ISm=V["summary"]["Fund IS (2002-2015)"]; OOS=V["summary"]["Fund OOS (2016-2026)"]
 SPY=V["summary"]["SPY"]; AL=V["alpha"]; NF=V["net_of_fee"]; CAP=F["capacity"]; SEN=F["sensitivity"]
 SEC=F["sector_breakdown"]; HL=F["holdings_latest"]; BZ=PIT["bias"]
@@ -213,7 +215,7 @@ table(s,8.1,1.95,4.7,0.52,["","CAGR","Shrp","MaxDD"],
 txt(s,8.1,4.4,4.7,2.0,[[("Alpha +%.1f%% / yr (t=%.1f)"%(AL['annualized']*100,AL['tstat']),True,POS)],
   [("vs FF5+Momentum, Newey-West SEs.",False,GREY)],
   [(" ",False,GREY)],
-  [("Out-of-sample Sharpe (%.2f) ≥ in-sample (%.2f): no overfitting decay."%(OOS['Sharpe'],ISm['Sharpe']),False,NAVY)]],size=13)
+  [("Out-of-sample Sharpe %.2f vs %.2f in-sample — a modest step-down, not the collapse overfitting produces; still well above the market OOS."%(OOS['Sharpe'],ISm['Sharpe']),False,NAVY)]],size=13)
 txt(s,0.5,6.55,12,0.3,"Label: all figures SIMULATED on historical data; no live or paper track record is shown.",size=9,color=GREY)
 
 # ===== 9. BACK-TEST HONESTY =====
@@ -222,7 +224,7 @@ table(s,0.55,1.55,12.2,0.58,["Common red flag","How we handle it"],
  [["Survivorship bias","Measured on Bloomberg point-in-time S&P 500 (1,085 names incl. delisted): only ~%.1f%%/yr — quantified, not assumed."%(BZ['cagr_drag']*100)],
   ["Look-ahead","All signals lagged ≥1 month; trailing-only z-scores; 2000–01 reserved as warm-up."],
   ["No transaction costs","15 bps round-trip on all turnover; every figure is net of costs."],
-  ["Overfitting","Train/test split (2002–15 vs 2016–26); OOS Sharpe ≥ IS; standard enhancements tested and rejected."],
+  ["Overfitting","Train/test split (2002–15 vs 2016–26); OOS Sharpe close to IS (no collapse); standard enhancements tested and rejected."],
   ["Sharpe too good / undisclosed","Sharpe %.2f with full methodology; deflated-Sharpe and factor regression in the appendix."%(S['Sharpe'])],
   ["Simulated vs live mislabelled","Everything is labelled SIMULATED; the fund is fictional."]],colw=[1.5,3.5],fs=11.5)
 
@@ -251,7 +253,7 @@ kpis(s,1.6,[("RAISE",f"${CAP['commitment_raise']/1e6:.0f}M","the commitment"),
             ("HEADROOM",f"{CAP['headroom_low']:.0f}–{CAP['headroom_high']:.0f}×","vs the raise"),
             ("USED AT RAISE",f"~{CAP['pct_of_capacity_at_raise']*100:.0f}%","of capacity")],w=2.75)
 bullets(s,0.55,3.3,12.2,3.0,[
- ("Basis: ","5%% of average daily volume over 2 days per name, across ~125 large-cap holdings; ADV assumed %s."%CAP['adv_assumption']),
+ ("Basis: ","5%% of average daily volume over 2 days per name, across ~111 holdings. ADV %s."%CAP['adv_assumption']),
  ("Implication: ","the full $100M deploys immediately in daily-liquid names; we never approach our own market impact."),
  ("Defensive sleeve: ","held in the most liquid ETFs on earth (Treasuries, gold) — no capacity constraint."),
 ],size=14,gap=10)
@@ -298,6 +300,42 @@ txt(s,0.92,5.8,11.8,0.6,"yfinance, Ken French Data Library, Bloomberg point-in-t
     "net of 15 bps costs. Full appendix in the Jupyter notebook.",size=12,color=WHITE)
 txt(s,0.92,6.7,11.8,0.5,"Disclaimer: Fictional pitch for the ESADE Asset Management course. Not investment advice. All performance is "
     "SIMULATED; past performance does not indicate future results. No real fund names or live numbers are used.",size=9,color=GREY)
+
+# ===== 16. APPENDIX — PORTFOLIO CONSTRUCTION ROBUSTNESS (Q&A backup) =====
+s=slide(); header(s,"Appendix A — why we hold ~125 names, not 25","Q&A BACKUP · BEYOND THE 15-SLIDE PITCH")
+txt(s,0.55,1.4,12.2,0.5,"\"Why not just hold 20–30 high-conviction names?\" — Because the concentrated book only wins in our single most-optimistic backtest, and reverses on the honest data.",size=13,color=NAVY,bold=True)
+rows=[("Top 25 names","Top 25 names (high-conviction)","Top 25 names"),
+      ("Top decile (~50)","Top decile (q=0.10, ~50)","Top decile (~50)"),
+      ("Quartile (~125) — FLAGSHIP","Quartile (q=0.25) — V1 FLAGSHIP","Quartile (~125)"),
+      ("Tercile (~165)","Tercile (q=0.33, ~165)","Tercile (~165)")]
+trows=[[lab, f"{CV[ck]['full']['Sharpe']:.2f}", f"{CS['free'][sk]['Sharpe']:.2f}", f"{CS['free'][sk]['MaxDD']*100:.0f}%"] for lab,ck,sk in rows]
+table(s,0.55,2.1,8.5,0.6,["Concentration","Monthly Sharpe\n(optimistic)","Survivorship-free\nSharpe (honest)","Surv-free\nMaxDD"],trows,colw=[2.4,1.3,1.4,1],fs=11)
+txt(s,9.3,2.1,3.5,3.2,[[("THE PATTERN",True,NAVY)],
+  [("Concentrated (25) wins only at monthly frequency on current constituents (Sharpe 1.20).",False,DARK)],
+  [(" ",False,DARK)],
+  [("On survivorship-free, point-in-time data it LOSES — quartile 0.54 vs 0.48, and −21% vs −31% drawdown.",False,DARK)]],size=12)
+bullets(s,0.55,5.0,12.2,1.6,[
+ ("Verdict: ","an edge that appears only in our most flattering configuration — and reverses on survivorship-free data and at quarterly frequency — is an artifact, not an edge. We pitch the diversified book: the number we can trust."),
+ ("Also tested: ","inverse-volatility weighting lowered the Sharpe (0.99 vs 1.09); equal weight won on evidence."),
+],size=12.5,gap=8)
+
+# ===== 17. APPENDIX B — ASSUMPTION ROBUSTNESS (Q&A backup) =====
+s=slide(); header(s,"Appendix B — every assumption stress-tested","Q&A BACKUP · BEYOND THE 15-SLIDE PITCH")
+txt(s,0.55,1.4,12.2,0.5,"We measured or stress-tested every input. The two judgement calls — trading costs and the overlay calibration — both hold.",size=13,color=NAVY,bold=True)
+# transaction-cost ladder
+txt(s,0.55,2.05,5.7,0.35,"TRANSACTION COST — edge survives even at 6× the assumption",size=11,color=NAVY,bold=True)
+tc_rows=[[f"{r['bps']} bps"+(" (current)" if r['bps']==15 else f" ({r['bps']//15}×)" if r['bps'] in (30,) else ""),
+          pc(r['CAGR']),f"{r['Sharpe']:.2f}",pc(r['MaxDD'])] for r in RB['tcost']]
+table(s,0.55,2.5,5.7,0.55,["Round-trip cost","CAGR","Sharpe","MaxDD"],tc_rows,colw=[1.7,1,1,1],fs=10.5)
+txt(s,0.55,5.2,5.7,0.9,"Even at 100 bps — six times our assumption — Sharpe 0.82 and 11.3% CAGR still beat the market (0.60 / 10.0%). The 15 bps assumption is not load-bearing.",size=10.5,color=GREY)
+# overlay grid
+txt(s,6.7,2.05,6.1,0.35,"OVERLAY CALIBRATION — a plateau, not a curve-fit",size=11,color=NAVY,bold=True)
+ov=RB['overlay']; head=["base \\ slope"]+[f"{sl:.3f}" for sl in ov['slopes']]
+ov_rows=[[f"{b:.2f}"+(" ←" if abs(b-0.65)<1e-9 else "")]+[f"{ov['sharpe_grid'][i][j]:.2f}" for j in range(len(ov['slopes']))] for i,b in enumerate(ov['bases'])]
+table(s,6.7,2.5,6.1,0.55,head,ov_rows,colw=[1.4,1,1,1],fs=10.5)
+txt(s,6.7,5.0,6.1,1.1,f"Sharpe ranges only {ov['min']:.2f}–{ov['max']:.2f} across nine settings (baseline 55–75%, slope 0.125–0.225). "
+    "The result doesn't hinge on the exact 0.65 / 0.175 — direct evidence we did not tune these to the backtest.",size=10.5,color=GREY)
+bullets(s,0.55,6.1,12.2,0.7,[("Takeaway: ","every assumption in the model is either measured against data (ADV) or stress-tested (cost, overlay). None is a hidden knife-edge.")],size=12,gap=4)
 
 prs.save("GSD2T_Pitch_Deck.pptx")
 print(f"Saved GSD2T_Pitch_Deck.pptx ({len(prs.slides._sldIdLst)} slides)")

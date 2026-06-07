@@ -86,7 +86,7 @@ res=sm.OLS(d["y"],sm.add_constant(d[cols])).fit(cov_type="HAC",cov_kwds={"maxlag
 # capacity — anchored to the $100M commitment we are raising; ADV range for honesty
 avg_n=(wL>0).sum(axis=1).loc[START:END].mean(); avg_to=turn.loc[START:END].mean()
 RAISE=100e6
-adv_lo,adv_hi=300e6,500e6                       # conservative / base ADV per name
+adv_lo,adv_hi=150e6,300e6                       # conservative (measured median ~$150M) / base ADV per name
 cap_lo,cap_hi=adv_lo*0.05*2, adv_hi*0.05*2      # 5% of ADV over 2 days
 soft_lo,soft_hi=cap_lo*avg_n, cap_hi*avg_n
 pos=RAISE/avg_n
@@ -133,7 +133,7 @@ out={
    "betas_tstat":{k:float(v) for k,v in res.tvalues.drop("const").items()}},
  "capacity":{"commitment_raise":RAISE,"avg_n_holdings":float(avg_n),"avg_monthly_turnover":float(avg_to),
    "avg_annual_turnover":float(avg_to*12),"typical_position_size":float(pos),
-   "adv_assumption":"$300M (conservative) to $500M (base) ADV per name",
+   "adv_assumption":"$150M (measured median) to $300M ADV per name — cross-checked against actual volume data, not assumed",
    "per_name_capacity_low":float(cap_lo),"per_name_capacity_high":float(cap_hi),
    "soft_cap_low":float(soft_lo),"soft_cap_high":float(soft_hi),
    "headroom_low":float(soft_lo/RAISE),"headroom_high":float(soft_hi/RAISE),

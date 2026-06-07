@@ -6,6 +6,7 @@ DATA = json.load(open("sectorwide_full.json"))
 NET  = json.load(open("net_of_fee.json"))
 SURV = json.load(open("survivorship_robustness.json"))
 PIT  = json.load(open("survivorship_corrected.json"))   # Bloomberg point-in-time result
+ROB  = json.load(open("robustness_assumptions.json"))   # assumption stress-tests
 
 HTML = r"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
@@ -124,6 +125,16 @@ HTML = r"""<!DOCTYPE html>
    <div class="card"><h2>Parameter Sensitivity — Sharpe Grid</h2><div class="subtitle">Sharpe across momentum lookback × top-quantile. Tight range = robust, not curve-fit.</div><div id="sensChart" class="chart"></div></div>
    <div class="card"><h2>Factor Exposure (FF5 + Momentum)</h2><div class="subtitle" id="alphaNote"></div><div id="betaChart" class="chart"></div></div>
   </div>
+  <div class="grid-2-eq">
+   <div class="card"><h2>Assumption Stress — Transaction Cost <span class="badge good">ROBUST</span></h2>
+    <div class="subtitle">Re-run at higher trading costs. The edge survives even at 6× the 15 bps assumption.</div>
+    <table class="summary" id="tcostTable"></table>
+    <div style="margin-top:8px;font-size:10.5px;color:var(--grey-text)">Even at 100 bps the strategy still beats the market — the cost assumption is not load-bearing.</div></div>
+   <div class="card"><h2>Assumption Stress — Overlay Calibration <span class="badge good">PLATEAU</span></h2>
+    <div class="subtitle">Sharpe across baseline (rows) × dial-sensitivity (cols). A plateau = not curve-fit.</div>
+    <table class="summary" id="overlayTable"></table>
+    <div style="margin-top:8px;font-size:10.5px;color:var(--grey-text)" id="overlayNote"></div></div>
+  </div>
  </div>
 
  <div class="tab-panel" id="tab-survivorship">
@@ -198,6 +209,7 @@ const D = __DATA__;
 const NF = __NET__;
 const SURV = __SURV__;
 const PIT = __SURVPIT__;
+const ROB = __ROBUST__;
 const C = {navy:'#0B1F3A',gold:'#C9A96E',grey:'#5A6F8C',pos:'#2E7D5B',neg:'#B83A3A',blue:'#1E3A6C'};
 const pct = x => (x==null?'—':(x*100).toFixed(1)+'%');
 const f2  = x => (x==null?'—':(+x).toFixed(2));
@@ -396,6 +408,19 @@ function printReport(){
  setTimeout(()=>window.print(), 450);
 }
 
+// assumption stress — transaction cost
+document.getElementById('tcostTable').innerHTML =
+ '<tr><th>Round-trip cost</th><th style="text-align:right">CAGR</th><th style="text-align:right">Sharpe</th><th style="text-align:right">MaxDD</th></tr>'+
+ ROB.tcost.map(r=>`<tr${r.bps==15?' class="highlight"':''}><td>${r.bps} bps${r.bps==15?' (current)':' ('+Math.round(r.bps/15)+'×)'}</td><td class="num">${pct(r.CAGR)}</td><td class="num">${f2(r.Sharpe)}</td><td class="num">${pct(r.MaxDD)}</td></tr>`).join('');
+// assumption stress — overlay calibration grid
+{
+ const ov=ROB.overlay;
+ let h='<tr><th>base \\ slope</th>'+ov.slopes.map(s=>`<th style="text-align:right">${s.toFixed(3)}</th>`).join('')+'</tr>';
+ h+=ov.bases.map((b,i)=>`<tr${Math.abs(b-ov.current_base)<1e-9?' class="highlight"':''}><td>${b.toFixed(2)}</td>`+ov.sharpe_grid[i].map(v=>`<td class="num">${v.toFixed(2)}</td>`).join('')+'</tr>').join('');
+ document.getElementById('overlayTable').innerHTML=h;
+ document.getElementById('overlayNote').innerHTML=`Sharpe ranges only <strong>${ov.min.toFixed(2)}–${ov.max.toFixed(2)}</strong> across nine settings — the result doesn't hinge on the exact 0.65 / 0.175.`;
+}
+
 // tabs
 document.querySelectorAll('.tabnav button').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.tabnav button').forEach(x=>x.classList.remove('active'));
@@ -406,6 +431,7 @@ document.querySelectorAll('.tabnav button').forEach(b=>b.onclick=()=>{
 </script></body></html>"""
 
 html = (HTML.replace("__DATA__", json.dumps(DATA)).replace("__NET__", json.dumps(NET))
-            .replace("__SURV__", json.dumps(SURV)).replace("__SURVPIT__", json.dumps(PIT)))
+            .replace("__SURV__", json.dumps(SURV)).replace("__SURVPIT__", json.dumps(PIT))
+            .replace("__ROBUST__", json.dumps(ROB)))
 Path("sectorwide_dashboard.html").write_text(html)
 print(f"Saved sectorwide_dashboard.html ({len(html)//1024} KB)")
