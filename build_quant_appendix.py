@@ -16,7 +16,9 @@ md("""# GSD²T Asset Management — Quant Appendix
 
 **AI-tool disclosure:** AI assistants were used for code scaffolding, backtest engineering and drafting. All strategy decisions, data choices and results were defined and verified by the team; nothing was fabricated.
 
-**What is recomputed live vs loaded:** the headline backtest, risk metrics, factor regression, stress tests and capacity (§4–§7, §11) are **recomputed live** when you run the cells. The survivorship correction (§8), the concentration study (§10) and the assumption stress-tests (§9) **load committed JSON artefacts** produced by `survivorship_corrected.py`, `concentration_*.py` and `robustness_assumptions.py` — the Bloomberg point-in-time data is heavy, so those run separately and are fully reproducible from the repo (the `json.load(...)` calls make this explicit in-cell).""")
+**What is recomputed live vs loaded:** the headline backtest, risk metrics, factor regression, stress tests and capacity (§4–§7, §11) are **recomputed live** when you run the cells. The survivorship correction (§8), the concentration study (§10) and the assumption stress-tests (§9) **load committed JSON artefacts** produced by `survivorship_corrected.py`, `concentration_*.py` and `robustness_assumptions.py` — the Bloomberg point-in-time data is heavy, so those run separately and are fully reproducible from the repo (the `json.load(...)` calls make this explicit in-cell).
+
+**To re-run this notebook:** keep it alongside the `data/` folder, which holds `data_cache/`, `course_data/` and the four `*.json` artefacts (the notebook resolves these paths automatically). §4–§7 and §11–§12 recompute live from the cached data; §8–§10 read the JSONs. The engines that generate those JSONs (`survivorship_corrected.py`, `concentration_*.py`, `robustness_assumptions.py`, `build_v1_flagship.py`) are in the `engines/` subfolder for provenance, so every figure traces back to named code — nothing here is hand-typed.""")
 
 md("""### What the brief requires, and where it is
 
@@ -40,7 +42,8 @@ import numpy as np, pandas as pd, statsmodels.api as sm
 import matplotlib.pyplot as plt
 plt.rcParams.update({"figure.figsize":(10,5),"font.size":11})
 
-CACHE=Path("data_cache"); DATA_ROOT=Path("course_data")
+def _p(rel): return rel if Path(rel).exists() else f"data/{rel}"   # resolve files at top level (dev) or under data/ (submission)
+CACHE=Path(_p("data_cache")); DATA_ROOT=Path(_p("course_data"))
 TC_BPS=15                       # round-trip trading cost (stress-tested later)
 START="2002-01-31"              # performance measured from 2002 (2000-01 reserved as signal warm-up)
 IS_END="2015-12-31"; OOS_START="2016-01-31"
@@ -214,19 +217,20 @@ The headline backtest (§5) uses current S&P 500 members. To measure the survivo
 
 > **Read this as a bias measurement, not a second flagship.** Because this quarterly-cash proxy is deliberately handicapped (quarterly beats monthly momentum by far, and cash earns less than the sleeve), its absolute level (~0.51 Sharpe) is **not comparable to the 1.09 headline** — the three gaps are *frequency*, *cash vs sleeve*, and *universe*, of which survivorship is only the last. What is meaningful is the **free-vs-biased gap on the same engine**, and *that* gap is the survivorship bias: **~1%/yr of CAGR, ~0.10 of Sharpe.** Full computation: `survivorship_corrected.py`.""")
 code("""import json
-PIT=json.load(open("survivorship_corrected.json")); b=PIT["bias"]
+PIT=json.load(open(_p("survivorship_corrected.json"))); b=PIT["bias"]
 sf=PIT["summary"]["Survivorship-free"]; bi=PIT["summary"]["Survivors-only (biased)"]; sp=PIT["summary"]["SPY"]
 tab=pd.DataFrame({"Survivorship-free":sf,"Survivors-only (biased)":bi,"S&P 500":sp}).T[["CAGR","Sharpe","MaxDD"]]
 for col in ["CAGR","MaxDD"]: tab[col]=(tab[col]*100).round(1).astype(str)+"%"
 tab["Sharpe"]=tab["Sharpe"].round(2)
 print(f"Survivorship bias = the free-vs-biased GAP on the SAME engine: ~{b['cagr_drag']*100:.1f}%/yr of CAGR, ~{b['sharpe_drag']:.2f} of Sharpe — small and quantified.")
 print("NB: the ~0.51 level below is the handicapped quarterly-cash PROXY used to isolate that gap; it is NOT the monthly flagship (Sharpe 1.09). Compare free vs biased, not this level vs the headline.")
+print("(The S&P row here is on the same quarterly engine — hence -46.1% / 0.57, vs the monthly -50.8% / 0.60 in section 5. Same index, quarterly vs monthly.)")
 tab""")
 
 md("""## 9 · Robustness — sensitivity & stress-tested assumptions
 
 Every parameter and assumption was either measured against data or stress-tested. Full computations in `bakeoff_variants.py`, `bakeoff_improvements.py`, `concentration_v1.py`, `robustness_assumptions.py`.""")
-code("""RB=json.load(open("robustness_assumptions.json"))
+code("""RB=json.load(open(_p("robustness_assumptions.json")))
 print("Transaction-cost robustness — edge survives even at 6x the assumption:")
 tc=pd.DataFrame(RB["tcost"]); tc["CAGR"]=(tc["CAGR"]*100).round(1).astype(str)+"%"; tc["MaxDD"]=(tc["MaxDD"]*100).round(0).astype(str)+"%"; tc["Sharpe"]=tc["Sharpe"].round(2)
 display(tc.set_index("bps"))
@@ -257,7 +261,7 @@ The **survivorship effect** is the *free-vs-biased gap within the quarterly engi
 
 *Cross-check (transparency): §8's headline survivorship test reads the quartile at ~0.51 Sharpe; the grid below reads it at 0.54. The ~0.03 difference is two independent point-in-time implementations (`survivorship_corrected.py` vs `concentration_survivorship.py`) — both land at ~0.5 and both are the quarterly proxy, not the flagship. We keep both rather than force one number, and the ranking argument is unaffected.*""")
 code("""import json
-CV=json.load(open("concentration_v1.json")); CS=json.load(open("concentration_survivorship.json"))
+CV=json.load(open(_p("concentration_v1.json"))); CS=json.load(open(_p("concentration_survivorship.json")))
 levels=[("Top 25 names (high-conviction)","Top 25 names","Top 25 (high-conviction)"),
         ("Top decile (q=0.10, ~50)","Top decile (~50)","Top decile (~50)"),
         ("Quartile (q=0.25) — V1 FLAGSHIP","Quartile (~125)","Quartile (~125) — FLAGSHIP"),
