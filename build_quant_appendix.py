@@ -183,11 +183,14 @@ print("equity-factor model cannot span (see §13). The cleanest, model-free wins
 betas=pd.DataFrame({"beta":res.params.drop('const').round(2),"t-stat":res.tvalues.drop('const').round(1)})
 betas""")
 
-md("## 7 · Stress tests — behaviour in every major crisis (and where the protection comes from)")
-code("""windows={"Dot-com 00-02":("2000-09-30","2002-10-31"),"GFC 07-09":("2007-10-31","2009-02-28"),
+md("""## 7 · Stress tests — behaviour in every major crisis (and where the protection comes from)
+
+**Windows are clamped to the live period (≥ 2002).** The overlay needs ~24 months to form, so 2000–2001 is warm-up and is *excluded* from every crisis stat — fund and S&P are always measured on the **same dates**. The dot-com window therefore reflects only its **2002 leg** (the part the strategy actually traded); we do not credit the fund for "avoiding" the 2000–2001 crash it was never live for.""")
+code("""# clamp every window to >= START so no crisis stat uses warm-up data and fund vs SPY share the same dates
+windows={"Dot-com (2002 leg)":("2000-09-30","2002-10-31"),"GFC 07-09":("2007-10-31","2009-02-28"),
  "Euro 2011":("2011-07-31","2011-09-30"),"China 15-16":("2015-08-31","2016-02-29"),
  "Vol-spike 2018":("2018-10-31","2018-12-31"),"COVID 2020":("2020-02-29","2020-04-30"),"2022 bear":("2021-12-31","2022-09-30")}
-def tot(s,a,b): seg=s.loc[a:b].dropna(); return float((1+seg).prod()-1) if len(seg) else np.nan
+def tot(s,a,b): seg=s.loc[START:].loc[a:b].dropna(); return float((1+seg).prod()-1) if len(seg) else np.nan
 rows=[]
 for nm,(a,b) in windows.items():
     rows.append({"Window":nm,"Fund":tot(port,a,b),"SPY":tot(spy,a,b),

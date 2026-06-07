@@ -64,10 +64,11 @@ d=pd.concat([(ret-rf.reindex(ret.index)).rename("y"),ff[cols]],axis=1).dropna()
 res=sm.OLS(d["y"],sm.add_constant(d[cols])).fit(cov_type="HAC",cov_kwds={"maxlags":6})
 
 # stress windows
-windows={"Dot-com (00-02)":("2000-09-30","2002-10-31"),"GFC (07-09)":("2007-10-31","2009-02-28"),
+windows={"Dot-com (2002 leg)":("2000-09-30","2002-10-31"),"GFC (07-09)":("2007-10-31","2009-02-28"),
  "Euro (2011)":("2011-07-31","2011-09-30"),"China (15-16)":("2015-08-31","2016-02-29"),
  "Volmageddon (18)":("2018-10-31","2018-12-31"),"COVID (2020)":("2020-02-29","2020-04-30"),"2022 bear":("2021-12-31","2022-09-30")}
-def tot(r,s,e): seg=r.loc[s:e].dropna(); return float((1+seg).prod()-1) if len(seg) else None
+# clamp every window to >= START (2002): no crisis stat uses warm-up data, and fund vs SPY share the same dates
+def tot(r,s,e): seg=r.loc[START:].loc[s:e].dropna(); return float((1+seg).prod()-1) if len(seg) else None
 stress=[{"window":k,"fund":tot(ret,s,e),"spy":tot(spy,s,e)} for k,(s,e) in windows.items()]
 
 # net-of-fee (1% mgmt monthly + 15% over SPY, relative HWM, annual crystallisation)
