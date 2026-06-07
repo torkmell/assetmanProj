@@ -24,11 +24,11 @@ A systematic, long-only S&P 500 strategy with two layers and a risk-off sleeve:
 
 | | CAGR | Vol | Sharpe | Max DD | Alpha (FF5+Mom) |
 |---|---|---|---|---|---|
-| **GSD²T — gross strategy (V1)** | **14.9%** | 11.9% | **1.15** | **−21%** | **+6.3% (t=4.8)** |
-| **GSD²T — net to investor** | **13.1%** | — | 0.97 | — | — |
-| S&P 500 (SPY) | 10.0% | 15.1% | 0.65 | −46% to −51% | — |
+| **GSD²T — gross strategy (V1)** | **14.9%** | 11.9% | **1.09** | **−21.2%** | **+5.4% (t=4.3)** |
+| **GSD²T — net to investor** | **13.1%** | — | 0.96 | −23.5% | — |
+| S&P 500 (SPY) | 10.0% | 15.1% | 0.60 | −50.8% | — |
 
-- **In-sample / out-of-sample:** IS Sharpe 1.16 → **OOS Sharpe 1.14** — no out-of-sample decay.
+- **In-sample / out-of-sample:** IS Sharpe 1.16 → **OOS Sharpe 1.01** — a modest step-down, not a collapse (OOS still beats the market's 0.86).
 - **Risk:** roughly two-thirds of the market's volatility and **less than half its drawdown**.
 - The strategy evolved from a narrower Tech-only prototype → full sector-wide → the V1 defensive sleeve (the current flagship). Earlier iterations are retained for research transparency.
 
@@ -41,10 +41,10 @@ A systematic, long-only S&P 500 strategy with two layers and a risk-off sleeve:
 | Survivorship bias | ✅ **Corrected** — measured on Bloomberg point-in-time S&P 500 (1,085 names incl. delisted); bias is only ~1%/yr |
 | Look-ahead | ✅ All signals lagged ≥1 month; trailing-only z-scores; 2000–01 reserved as warm-up |
 | Transaction costs | ✅ 15 bps round-trip on all turnover; every figure is net of costs |
-| Out-of-sample / train-test | ✅ IS 2002–15 / OOS 2016–26; OOS Sharpe ≥ IS |
+| Out-of-sample / train-test | ✅ IS 2002–15 / OOS 2016–26; OOS Sharpe **1.01 vs IS 1.16** — modest step-down, disclosed (still beats the market's 0.86) |
 | Overfitting | ✅ Standard enhancements (risk-managed momentum, vol targeting, low-beta, quality) tested and **rejected** — none beat the simple design OOS |
 | Factor regression | ✅ FF5 + Momentum with Newey-West HAC standard errors |
-| Capacity | ✅ Soft cap **$3.3–5.6B** (5%-ADV × 2-day), 33–56× the $100M raise |
+| Capacity | ✅ Soft cap **$1.7–3.3B** (5%-ADV × 2-day, ADV measured ~$150–300M per name), **17–33×** the $100M raise |
 | Stress tests | ✅ 7 crisis windows (Dot-com, GFC, Eurozone, China, Vol-spike 2018, COVID, 2022) |
 | Simulated vs live | ✅ Labelled everywhere; the fund is fictional |
 
@@ -67,7 +67,10 @@ Strategy & backtests
 ├── bakeoff_improvements.py       ← enhancements tested on V1 (all rejected OOS)
 
 Deliverables
-├── GSD2T_Pitch_Deck.pptx         ← 15-slide pitch deck (export to PDF for submission)
+├── GSD2T_Quant_Appendix.ipynb    ← quant appendix notebook (the .ipynb submission) + matching .pdf
+├── GSD2T_Pitch_Deck.pptx         ← 15-slide pitch deck (export slides 1–15 to PDF for submission)
+├── GSD2T_Pitch_Script.docx       ← run-of-show / speaker script + Q&A playbook
+├── GSD2T_QA_Simulation.docx      ← 39-question Q&A preparation
 ├── sectorwide_dashboard.html     ← interactive dashboard (Overview, Risk, Survivorship, Point-in-Time, Terms)
 ├── SectorWide_Strategy_Overview.docx  ← strategy brief (incl. survivorship section)
 ├── Strategy_Refinement_Findings.docx  ← bake-off findings memo (V1 + enhancements)

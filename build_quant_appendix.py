@@ -16,6 +16,20 @@ md("""# GSD²T Asset Management — Quant Appendix
 
 **AI-tool disclosure:** AI assistants were used for code scaffolding, backtest engineering and drafting. All strategy decisions, data choices and results were defined and verified by the team; nothing was fabricated; every figure below is reproduced live by running the cells.""")
 
+md("""### What the brief requires, and where it is
+
+| Spec requirement | Section |
+|---|---|
+| CAGR, volatility, Sharpe | §5 Headline results |
+| Maximum drawdown | §5 (table) + §6 (chart) |
+| Turnover | §5 (≈379%/yr) |
+| At least one stress scenario | §7 (seven crisis windows) |
+| Data sources documented | §1 Data sources |
+| Look-ahead controls documented | §2 Look-ahead controls |
+| Simulated vs live, clearly labelled | banner above, plus every printed result is tagged **SIMULATED** |
+
+Everything below is **SIMULATED** on historical data. **No live or paper track record exists.**""")
+
 md("## 0 · Setup")
 code("""%matplotlib inline
 import warnings; warnings.filterwarnings("ignore")
