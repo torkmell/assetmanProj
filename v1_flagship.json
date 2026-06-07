@@ -4825,5 +4825,15 @@
     "avg_cash": 0.34423677008916576,
     "avg_monthly_turnover": 0.3156735582588463,
     "avg_annual_turnover": 3.7880826991061554
+  },
+  "tail_risk": {
+    "fund": {
+      "VaR95_monthly": 0.04712830492375934,
+      "CVaR95_monthly": 0.06651976667724996
+    },
+    "spy": {
+      "VaR95_monthly": 0.07439154143078769,
+      "CVaR95_monthly": 0.09606146854651995
+    }
   }
 }

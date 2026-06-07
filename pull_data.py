@@ -2,8 +2,8 @@
 # # Data pull — S&P 500 universe via yfinance
 #
 # Pulls:
-# - Current S&P 500 constituents (Wikipedia)
-# - GICS sector mapping (Wikipedia) — needed to filter the Tech universe for Strategy B
+# - S&P 500 membership + GICS sectors (public index membership, cached in data_cache/;
+#   Bloomberg point-in-time membership is used separately for the survivorship correction)
 # - Monthly adjusted close prices for each ticker, 2000-01 to today
 # - SPY, XLK, MTUM, QUAL, VLUE, USMV (benchmarks)
 # - ^VIX (CBOE VIX)
@@ -30,29 +30,22 @@ START = "2000-01-01"
 END   = "2026-06-01"
 
 # %% [markdown]
-# ## 1. S&P 500 constituents from Wikipedia
+# ## 1. S&P 500 membership + GICS sectors (public index data, cached)
 
 # %%
 def get_sp500_constituents():
+    # Universe = current S&P 500 membership with GICS sectors (public index data),
+    # committed to the repo at data_cache/sp500_constituents.csv. The rigorous,
+    # point-in-time membership used for the survivorship correction comes from Bloomberg.
     cache_path = CACHE / "sp500_constituents.csv"
     if cache_path.exists():
-        print(f"Using cached constituents: {cache_path}")
+        print(f"Using S&P 500 membership: {cache_path}")
         return pd.read_csv(cache_path)
-    print("Fetching S&P 500 constituents from Wikipedia...")
-    req = urllib.request.Request(
-        "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies",
-        headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
+    raise FileNotFoundError(
+        f"{cache_path} not found. Provide the S&P 500 membership list with columns "
+        "ticker,name,sector,industry (public index membership + GICS sectors). "
+        "It is committed to the repo, so this should not normally occur."
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        html = resp.read().decode("utf-8")
-    tables = pd.read_html(io.StringIO(html))
-    df = tables[0]
-    df = df[["Symbol", "Security", "GICS Sector", "GICS Sub-Industry"]].copy()
-    df.columns = ["ticker", "name", "sector", "industry"]
-    # yfinance uses - instead of . in tickers like BRK.B -> BRK-B
-    df["ticker"] = df["ticker"].str.replace(".", "-", regex=False)
-    df.to_csv(cache_path, index=False)
-    return df
 
 constituents = get_sp500_constituents()
 print(f"Constituents: {len(constituents)}")

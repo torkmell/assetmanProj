@@ -88,8 +88,9 @@ table(["Metric","Sector-Wide","S&P 500 (SPY)"], [
     ["Capacity vs $100M raise", f"${CAP['soft_cap_low']/1e9:.0f}-{CAP['soft_cap_high']/1e9:.0f}B "
         f"({CAP['headroom_low']:.0f}-{CAP['headroom_high']:.0f}x headroom)", "—"],
 ])
-body("It generalises: the same engine gives a ~1.0 Sharpe with significant alpha on the tech universe "
-     "(0.93) and even the Dow Jones 30 (0.99) — strong evidence it is a real effect, not a tech bet.", italic=True)
+body("It is robust, not curve-fit: the result holds as a plateau across parameter settings, survives the "
+     "survivorship correction (~1%/yr measured bias), and stands up to transaction-cost and overlay-calibration "
+     "stress-tests — strong evidence it is a real effect, not a tech bet.", italic=True)
 body(f"On the $100M commitment we are raising, the strategy runs at roughly "
      f"{CAP['pct_of_capacity_at_raise']*100:.0f}% of capacity — {CAP['headroom_low']:.0f}-{CAP['headroom_high']:.0f}x headroom. "
      "We can deploy the full $100M immediately in daily-liquid large-caps and never need to soft-close early.", italic=True)

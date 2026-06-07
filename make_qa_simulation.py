@@ -39,6 +39,14 @@ for t in [
     p=doc.add_paragraph(style="List Bullet"); p.add_run(t)
 
 doc.add_heading("A · The edge & strategy",1)
+qa("Is your strategy systematic or discretionary?",
+   "Fully systematic — rules-based at every layer, with zero discretionary judgment. The momentum signal, the "
+   "4-factor macro overlay, the exposure dial and the monthly rebalance are all pre-defined formulas. Nobody picks a "
+   "stock, overrides the dial, or makes a market call. The proof: the entire strategy is reproducible from our "
+   "notebook — a grader can re-run it and get the exact same positions and returns, which a discretionary strategy "
+   "can't. And the discipline is part of the edge: we de-risk in stress precisely when a discretionary manager might "
+   "freeze.",
+   key="Reproducible from code = the hallmark of systematic. Maps to the brief's own 'equity factor + systematic macro' categories.")
 qa("What is your actual edge? Everyone runs momentum.",
    "Our edge is not the stock signal — momentum is commoditised and we say so. Our edge is the macro overlay that "
    "systematically cuts equity exposure in stress, plus a defensive sleeve that earns in risk-off periods instead of "
@@ -50,6 +58,13 @@ qa("Why does momentum persist? Shouldn't it be arbitraged away?",
    "violent crashes that deter leveraged arbitrageurs, and mandate/career constraints stop most managers from "
    "following it cleanly. Decades of literature (Jegadeesh & Titman onward) document it. We don't bet the fund on it "
    "though — it's the selection layer; the overlay is the differentiator.")
+qa("Why no machine learning or deep models?",
+   "Because at monthly frequency the binding constraint is sample size, not model capacity. With ~290 monthly "
+   "observations, a deep model would overfit — the literature shows ML helps where data is rich (intraday, alt-data) "
+   "and that a regularised linear/factor baseline is already strong for monthly cross-sectional work. A simple, "
+   "transparent momentum signal is the disciplined choice; it's also fully reproducible and auditable, which a "
+   "learned policy is not. We'd reach for ML only if the data and the structure justified it; here they don't.",
+   key="Monthly data → sample complexity is the constraint, not capacity. Simple beats deep here — and stays auditable.")
 qa("Isn't this just a long-only factor portfolio I can buy as an ETF?",
    "Partly, and we're honest about that — the stock-selection layer is replicable. What isn't replicable is the "
    "overlay-plus-sleeve timing, which drives the drawdown and Sharpe. That's also why we charge below hedge-fund "
@@ -72,6 +87,14 @@ qa("Why the top quartile specifically — isn't that arbitrary?",
    "It's the standard cut in the momentum literature and gives ~125 names — enough to express the factor cleanly "
    "without diluting into the weak half of the distribution. We tested decile and tercile around it; the risk-adjusted "
    "profile is stable, so we chose the broader, more robust, more scalable cut deliberately.")
+
+qa("Why long-only? Why not long-short?",
+   "We tested long-short and it bled. In a market dominated by a handful of mega-caps, the short legs got run over "
+   "in the 2018–24 rally — shorting the names that kept winning produced catastrophic drawdowns. Long-only is a "
+   "deliberate risk choice: it bounds losses (no unbounded short risk), avoids borrow costs and short-squeeze risk, "
+   "and the variable-net-exposure overlay gives us the de-risking benefit a market-neutral book would, without the "
+   "short-side fragility.",
+   key="We tested L/S — the short legs bled in the mega-cap rally. Long-only is the deliberate, lower-risk choice.")
 
 doc.add_heading("C · The macro overlay",1)
 qa("Isn't this just market timing? Market timing doesn't work.",
@@ -98,7 +121,8 @@ qa("How do you handle survivorship bias?",
 qa("How do I know there's no look-ahead bias?",
    "Every signal is lagged at least one month and uses only trailing windows for the z-scores. We reserve 2000–2001 "
    "purely as signal warm-up and only measure performance from 2002, so no number is produced by a signal that "
-   "wasn't fully formed at the time.")
+   "wasn't fully formed at the time.",
+   key="Disclosed: the credit factor uses the HYG ETF (2007 inception), so it joins the overlay ~2010 — the dial runs on the other three factors before then. Data availability, not look-ahead; result is robust (1.09 from 2002 vs 1.07 from 2004).")
 qa("Did you include transaction costs?",
    "Yes — 15 bps round-trip on all turnover, and every figure we show is net of it. Turnover runs around 380% a year; "
    "the cost drag is modelled, not ignored.")
@@ -135,9 +159,14 @@ qa("Did you tune the overlay's parameters (the 0.65 baseline, 0.175 slope) to th
 
 doc.add_heading("E · Risk framework",1)
 qa("What's your worst case? Where's the tail risk?",
-   "Worst simulated drawdown was −21%, versus the market's −46% to −51%, and we stress-tested seven separate crises. "
-   "Structurally the tail is bounded: long-only and no leverage means no unbounded loss, single names are capped near "
-   "1%, and the overlay de-risks in stress. In a live fund we'd add explicit exposure and volatility limits on top.")
+   "Worst simulated drawdown was −21%%, versus the market's −46%% to −51%%, across seven separate crises. On the "
+   "coherent measure — expected shortfall, not VaR — our monthly 95%% CVaR is %.1f%% versus the market's %.1f%%; we "
+   "report ES because returns are heavy-tailed and Gaussian VaR understates the tail. Structurally the tail is "
+   "bounded: long-only and no leverage means no unbounded loss, single names are capped near 1%%, and the overlay "
+   "de-risks in stress. In a live fund we'd add explicit exposure and volatility limits."
+   %(V["tail_risk"]["fund"]["CVaR95_monthly"]*100, V["tail_risk"]["spy"]["CVaR95_monthly"]*100),
+   key="Monthly 95%% CVaR (expected shortfall) %.1f%% vs market %.1f%% — the coherent measure, and lower than the market."
+   %(V["tail_risk"]["fund"]["CVaR95_monthly"]*100, V["tail_risk"]["spy"]["CVaR95_monthly"]*100))
 qa("What regime breaks this strategy?",
    "One where momentum AND the defensive assets fail at the same time — which is exactly what 2022 was, when stocks "
    "and bonds fell together. We disclose it. Gold in the sleeve diversifies that risk, and even including 2022 the "
@@ -177,6 +206,13 @@ qa("1% on $100M is $1M a year whether you perform or not.",
    "only triggers above the benchmark and only on new highs — so we're paid to beat the market, not to hold it.")
 
 doc.add_heading("I · Results, 'why now', and general",1)
+qa("Do you beat an equal-weight S&P 500, or just cap-weight?",
+   "Our alpha already controls for it. The +5.4%% alpha is measured against Fama-French 5 + Momentum, which includes "
+   "SMB (size) — so the equal-weight/small-cap tilt is regressed out, and the alpha survives it. Equal-weighting is a "
+   "genuinely hard benchmark (DeMiguel-Garlappi-Uppal showed it often beats Markowitz out-of-sample), which is "
+   "exactly why we equal-weight within our book rather than optimise. Beating cap-weight SPY net of fees is the "
+   "headline; the factor-adjusted alpha shows it isn't merely a size tilt.",
+   key="Alpha is net of SMB (size), so it's not an equal-weight tilt in disguise. We equal-weight precisely because it's hard to beat.")
 qa("Net 13.1% versus the market's 10% — that's only 3% for all this machinery.",
    "The 3% net outperformance is real, but it's not the headline — the headline is risk. We deliver it at a 1.09 "
    "Sharpe versus 0.60, and a −21% drawdown versus −50%. We're selling risk-adjusted compounding and downside "

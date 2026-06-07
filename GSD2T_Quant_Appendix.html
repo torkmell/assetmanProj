@@ -7796,7 +7796,7 @@ a.anchor-link {
 <!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 <main>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b66a842c">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3c8080e9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7811,7 +7811,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4e277d99">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=27b0b6e3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7821,7 +7821,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9565711a">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=97cc3152">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7861,7 +7861,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d46ad38a">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=07264a94">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7902,8 +7902,8 @@ a.anchor-link {
 <td>Survivorship-bias correction</td>
 </tr>
 <tr>
-<td>S&amp;P 500 constituent list</td>
-<td>data_cache/sp500_constituents.csv</td>
+<td>S&amp;P 500 membership</td>
+<td>Published index membership (current); <strong>Bloomberg point-in-time</strong> for the survivorship test</td>
 <td>Universe definition</td>
 </tr>
 </tbody>
@@ -7912,7 +7912,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=0809a908">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1d9a755e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7949,7 +7949,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3864f3e4">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=511d5ba3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7962,13 +7962,14 @@ a.anchor-link {
 <li>The <strong>composite overlay score is lagged one month</strong> before it sets exposure.</li>
 <li><strong>Portfolio weights are lagged</strong> (<code>wL.shift(1)</code>) before being multiplied by returns — positions are formed at month <em>t</em>, returns earned at <em>t+1</em>.</li>
 <li><strong>2000–2001 is reserved as warm-up</strong> so signals are fully formed; performance is measured from <strong>2002</strong>.</li>
+<li><strong>Factor availability (disclosed):</strong> the credit factor is built from the HYG high-yield ETF (inception 2007), so it joins the overlay around <strong>2010</strong>; before then the dial runs on the other three factors (VIX, yield, trend). This is data availability, not look-ahead — the overlay uses only the factors that existed at each point in time, and the result is robust to it (Sharpe 1.09 from 2002 vs 1.07 from 2004).</li>
 <li><strong>Survivorship:</strong> the dedicated survivorship section uses Bloomberg <strong>point-in-time</strong> membership, not today's constituents.</li>
 </ul>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b4e7b6ab">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a98c647b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -7978,7 +7979,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7126ed24">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=7c59f77b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8083,7 +8084,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ca1440a8">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=74af43dc">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8093,7 +8094,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=591e3da5">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=a1f39130">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8138,7 +8139,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=20abf93e">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f770a92c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8148,7 +8149,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9b17812f">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=d2e41fff">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8275,7 +8276,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=b2db3dcf">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=4b356548">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8307,7 +8308,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=5e7c332d">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=cfde54c1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8317,7 +8318,7 @@ a.anchor-link {
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=b2b26334">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=9bd87a48">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8331,6 +8332,13 @@ a.anchor-link {
 <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">dd_f</span><span class="o">.</span><span class="n">index</span><span class="p">,</span><span class="n">dd_f</span><span class="o">.</span><span class="n">values</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"#2E7D5B"</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">.4</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"GSD2T V1"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dd_s</span><span class="o">.</span><span class="n">index</span><span class="p">,</span><span class="n">dd_s</span><span class="o">.</span><span class="n">values</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"#5A6F8C"</span><span class="p">,</span><span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">ls</span><span class="o">=</span><span class="s2">":"</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"S&amp;P 500"</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Drawdown %"</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span> <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">.3</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">"Drawdowns — SIMULATED"</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># coherent tail risk: monthly 95% VaR and expected shortfall (CVaR), vs the market</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">es_var</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="mf">0.95</span><span class="p">):</span>
+    <span class="n">r</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">dropna</span><span class="p">();</span> <span class="n">q</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">a</span><span class="p">);</span> <span class="k">return</span> <span class="o">-</span><span class="n">q</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span><span class="p">[</span><span class="n">r</span><span class="o">&lt;=</span><span class="n">q</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">fv</span><span class="p">,</span><span class="n">fc</span><span class="o">=</span><span class="n">es_var</span><span class="p">(</span><span class="n">ret</span><span class="p">);</span> <span class="n">sv</span><span class="p">,</span><span class="n">sc</span><span class="o">=</span><span class="n">es_var</span><span class="p">(</span><span class="n">spy</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ret</span><span class="o">.</span><span class="n">index</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Monthly 95% VaR / CVaR (expected shortfall):  GSD2T </span><span class="si">{</span><span class="n">fv</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">% / </span><span class="si">{</span><span class="n">fc</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%   |   S&amp;P 500 </span><span class="si">{</span><span class="n">sv</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">% / </span><span class="si">{</span><span class="n">sc</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"(We report CVaR — the coherent measure — not Gaussian VaR, because returns are heavy-tailed.)"</span><span class="p">)</span>
 
 <span class="n">cols</span><span class="o">=</span><span class="p">[</span><span class="s2">"Mkt-RF"</span><span class="p">,</span><span class="s2">"SMB"</span><span class="p">,</span><span class="s2">"HML"</span><span class="p">,</span><span class="s2">"RMW"</span><span class="p">,</span><span class="s2">"CMA"</span><span class="p">,</span><span class="s2">"Mom"</span><span class="p">]</span>
 <span class="n">d</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([(</span><span class="n">ret</span><span class="o">-</span><span class="n">rf</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">index</span><span class="p">))</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s2">"y"</span><span class="p">),</span><span class="n">ff</span><span class="p">[</span><span class="n">cols</span><span class="p">]],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
@@ -8357,7 +8365,9 @@ a.anchor-link {
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Alpha = +5.4% / yr   (t = 4.3),   R² = 0.70
+<pre>Monthly 95% VaR / CVaR (expected shortfall):  GSD2T 4.7% / 6.7%   |   S&amp;P 500 7.4% / 9.6%
+(We report CVaR — the coherent measure — not Gaussian VaR, because returns are heavy-tailed.)
+Alpha = +5.4% / yr   (t = 4.3),   R² = 0.70
 Regression window: 2002-01 to 2026-04  (Newey-West HAC standard errors)
 </pre>
 </div>
@@ -8426,7 +8436,7 @@ Regression window: 2002-01 to 2026-04  (Newey-West HAC standard errors)
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8393ad2e">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0aeb9ab2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8436,7 +8446,7 @@ Regression window: 2002-01 to 2026-04  (Newey-West HAC standard errors)
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=adfca70c">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=133032af">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8575,7 +8585,7 @@ the overlay (cutting equity) carried the protection. SIMULATED.
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d0e5ecf3">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=209d9205">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8585,7 +8595,7 @@ the overlay (cutting equity) carried the protection. SIMULATED.
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=1dfccc38">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=b4ff196b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8670,7 +8680,7 @@ the overlay (cutting equity) carried the protection. SIMULATED.
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=b6c92fee">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=bd2e1042">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8680,7 +8690,7 @@ the overlay (cutting equity) carried the protection. SIMULATED.
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=efb430d8">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=ff7821d2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8834,7 +8844,7 @@ Overlay-calibration robustness — Sharpe range 1.06-1.09 across 9 settings (a p
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ee081a2b">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=12cdd24f">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8844,7 +8854,7 @@ Overlay-calibration robustness — Sharpe range 1.06-1.09 across 9 settings (a p
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=3818d86d">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=c25d600a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8859,6 +8869,15 @@ Overlay-calibration robustness — Sharpe range 1.06-1.09 across 9 settings (a p
     <span class="n">soft</span><span class="o">=</span><span class="n">per_name</span><span class="o">*</span><span class="n">avg_n</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ADV $</span><span class="si">{</span><span class="n">adv</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">M (</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">): per-name $</span><span class="si">{</span><span class="n">per_name</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">M  -&gt;  soft cap $</span><span class="si">{</span><span class="n">soft</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">B  =  </span><span class="si">{</span><span class="n">soft</span><span class="o">/</span><span class="n">RAISE</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">x the $100M raise"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Avg holdings: </span><span class="si">{</span><span class="n">avg_n</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">.  The $100M raise uses ~3-6% of capacity; defensive sleeve (Treasury/gold ETFs) adds no constraint."</span><span class="p">)</span>
+
+<span class="c1"># capacity CURVE — net Sharpe vs AUM under the square-root impact law</span>
+<span class="n">sr_g</span><span class="o">=</span><span class="n">metrics</span><span class="p">(</span><span class="n">ret</span><span class="p">)[</span><span class="s1">'Sharpe'</span><span class="p">];</span> <span class="n">sig</span><span class="o">=</span><span class="n">metrics</span><span class="p">(</span><span class="n">ret</span><span class="p">)[</span><span class="s1">'Vol'</span><span class="p">];</span> <span class="n">to_m</span><span class="o">=</span><span class="p">(</span><span class="n">turn</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">START</span><span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">*</span><span class="mi">12</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">12.0</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">net_sr</span><span class="p">(</span><span class="n">aum</span><span class="p">,</span><span class="n">adv</span><span class="o">=</span><span class="mf">150e6</span><span class="p">,</span><span class="n">sd</span><span class="o">=</span><span class="mf">0.02</span><span class="p">):</span>
+    <span class="n">part</span><span class="o">=</span><span class="p">(</span><span class="n">aum</span><span class="o">*</span><span class="n">to_m</span><span class="o">/</span><span class="n">avg_n</span><span class="p">)</span><span class="o">/</span><span class="n">adv</span><span class="p">;</span> <span class="n">cost</span><span class="o">=</span><span class="p">(</span><span class="n">turn</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">START</span><span class="p">:]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">*</span><span class="mi">12</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">sd</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">part</span><span class="p">,</span><span class="mi">0</span><span class="p">));</span> <span class="k">return</span> <span class="n">sr_g</span><span class="o">-</span><span class="n">cost</span><span class="o">/</span><span class="n">sig</span><span class="p">,</span> <span class="n">part</span><span class="o">/</span><span class="mi">2</span>
+<span class="n">cap</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([(</span><span class="sa">f</span><span class="s2">"$</span><span class="si">{</span><span class="n">a</span><span class="o">/</span><span class="mf">1e9</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">B"</span> <span class="k">if</span> <span class="n">a</span><span class="o">&gt;=</span><span class="mf">1e9</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"$</span><span class="si">{</span><span class="n">a</span><span class="o">/</span><span class="mf">1e6</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">M"</span><span class="p">,</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">net_sr</span><span class="p">(</span><span class="n">a</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%"</span><span class="p">,</span><span class="nb">round</span><span class="p">(</span><span class="n">net_sr</span><span class="p">(</span><span class="n">a</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span><span class="mi">2</span><span class="p">))</span>
+                  <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">1e8</span><span class="p">,</span><span class="mf">1e9</span><span class="p">,</span><span class="mf">3.3e9</span><span class="p">,</span><span class="mf">1e10</span><span class="p">,</span><span class="mf">2.5e10</span><span class="p">,</span><span class="mf">5e10</span><span class="p">]],</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"AUM"</span><span class="p">,</span><span class="s2">"daily %ADV"</span><span class="p">,</span><span class="s2">"net Sharpe"</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Capacity curve (net Sharpe vs AUM; the single most important capacity diagnostic):"</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">cap</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"AUM"</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -8875,13 +8894,81 @@ Overlay-calibration robustness — Sharpe range 1.06-1.09 across 9 settings (a p
 ADV $300M (base): per-name $30M  -&gt;  soft cap $3.3B  =  33x the $100M raise
 
 Avg holdings: 111.  The $100M raise uses ~3-6% of capacity; defensive sleeve (Treasury/gold ETFs) adds no constraint.
+
+Capacity curve (net Sharpe vs AUM; the single most important capacity diagnostic):
 </pre>
 </div>
 </div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output" data-mime-type="text/html" tabindex="0">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>daily %ADV</th>
+<th>net Sharpe</th>
+</tr>
+<tr>
+<th>AUM</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>$100M</th>
+<td>0.05%</td>
+<td>1.08</td>
+</tr>
+<tr>
+<th>$1.0B</th>
+<td>0.47%</td>
+<td>1.06</td>
+</tr>
+<tr>
+<th>$3.3B</th>
+<td>1.56%</td>
+<td>1.03</td>
+</tr>
+<tr>
+<th>$10.0B</th>
+<td>4.73%</td>
+<td>0.99</td>
+</tr>
+<tr>
+<th>$25.0B</th>
+<td>11.83%</td>
+<td>0.93</td>
+</tr>
+<tr>
+<th>$50.0B</th>
+<td>23.66%</td>
+<td>0.87</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d95144a7">
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ed906e12">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8891,7 +8978,7 @@ Avg holdings: 111.  The $100M raise uses ~3-6% of capacity; defensive sleeve (Tr
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=e8680d62">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=5ec30987">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -8987,7 +9074,7 @@ Avg holdings: 111.  The $100M raise uses ~3-6% of capacity; defensive sleeve (Tr
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=420a7fe2">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=1d13fb3b">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>

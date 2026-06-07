@@ -173,7 +173,7 @@ for i,(t,d,col) in enumerate([
 txt(s,0.55,4.5,12.2,0.4,"Position per stock = (1 / number held) × macro exposure.   No leverage · no shorting · monthly rebalance · 15 bps round-trip cost.",size=13,color=NAVY,bold=True)
 bullets(s,0.55,5.1,12.2,1.4,[
  ("Genuinely diversified: ","currently %d holdings across %d sectors — concentration risk is structurally capped (~1%% per name)."%(HL['n_holdings'],HL['n_sectors'])),
- ("It generalises: ","the same engine gives ~1.0 Sharpe on the Dow 30 and the tech sub-universe — evidence of a real effect, not a single-market fit."),
+ ("Robust, not a fluke: ","the edge is a parameter plateau, survives the survivorship correction, and holds under cost and overlay stress-tests — a real effect, not a curve-fit."),
 ],size=13,gap=7)
 
 # ===== 6. PORTFOLIO CONSTRUCTION =====
@@ -201,7 +201,8 @@ bullets(s,0.55,3.2,12.2,3.3,[
  ("Factor discipline: ","controlled exposures (market β %.2f, momentum +%.2f); alpha measured against FF5+Momentum with Newey-West standard errors."%(AL['betas']['Mkt-RF'],AL['betas']['Mom'])),
  ("Diversification & limits: ","~125 names, 11 sectors, ~1%% single-name cap, no leverage, no shorting — failure of any one name is immaterial."),
  ("Defensive convexity: ","the risk-off sleeve (Treasuries + gold) tends to rise when equities fall, cushioning crises further."),
-],size=13.5,gap=9)
+ ("Coherent tail measure: ","monthly 95%% expected shortfall (CVaR) %.1f%% vs the market's %.1f%% — we report ES, not Gaussian VaR."%(V['tail_risk']['fund']['CVaR95_monthly']*100,V['tail_risk']['spy']['CVaR95_monthly']*100)),
+],size=13,gap=7)
 
 # ===== 8. BACK-TEST RESULTS =====
 s=slide(); header(s,"Back-test results (simulated, 2002–2026)","SIMULATED · NET OF 15 BPS COSTS · GROSS OF FEES")
@@ -252,11 +253,12 @@ kpis(s,1.6,[("RAISE",f"${CAP['commitment_raise']/1e6:.0f}M","the commitment"),
             ("SOFT CAPACITY",f"${CAP['soft_cap_low']/1e9:.1f}–{CAP['soft_cap_high']/1e9:.1f}B","strategy-level"),
             ("HEADROOM",f"{CAP['headroom_low']:.0f}–{CAP['headroom_high']:.0f}×","vs the raise"),
             ("USED AT RAISE",f"~{CAP['pct_of_capacity_at_raise']*100:.0f}%","of capacity")],w=2.75)
-bullets(s,0.55,3.3,12.2,3.0,[
- ("Basis: ","5%% of average daily volume over 2 days per name, across ~111 holdings. ADV %s."%CAP['adv_assumption']),
- ("Implication: ","the full $100M deploys immediately in daily-liquid names; we never approach our own market impact."),
- ("Defensive sleeve: ","held in the most liquid ETFs on earth (Treasuries, gold) — no capacity constraint."),
-],size=14,gap=10)
+bullets(s,0.55,3.3,6.1,3.2,[
+ ("Basis: ","5%% of ADV over 2 days per name, ~111 holdings. ADV %s."%CAP['adv_assumption']),
+ ("Curve, not just a number: ","net Sharpe holds above the market well past the raise; it degrades only gradually (sub-linear square-root impact)."),
+ ("Defensive sleeve: ","held in the most liquid ETFs on earth — no capacity constraint."),
+],size=12.5,gap=8)
+s.shapes.add_picture("fig_capacity_curve.png",Inches(6.85),Inches(3.2),width=Inches(6.0))
 
 # ===== 13. FUND TERMS =====
 s=slide(); header(s,"Fund structure & terms — aligned with liquidity","FUND STRUCTURE & TERMS (10 PTS)")

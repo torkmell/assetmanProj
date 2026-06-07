@@ -163,8 +163,9 @@ bullet("we tested the standard literature enhancements — risk-managed momentum
 bullet(f"using current index members overstates results because failed companies drop out. We measured the bias on "
        f"Bloomberg point-in-time data (1,085 names incl. delisted): only ~{abs(PIT['bias']['cagr_drag'])*100:.1f}%/yr. "
        "Small, quantified, disclosed — not assumed.", lead="Survivorship bias corrected: ")
-bullet("the same engine gives strong, significant results on the full S&P 500 and even the Dow 30 — evidence of a "
-       "real effect, not a single-market fit. We pitch the diversified sector-wide version.", lead="Sector-wide, not tech-only: ")
+bullet("we apply the engine to the whole S&P 500 (all 11 sectors), not just tech — a genuinely diversified book. The "
+       "edge holds up under our robustness tests (parameter sensitivity, survivorship correction, cost and overlay "
+       "stress-tests) rather than depending on one market. We pitch the diversified sector-wide version.", lead="Sector-wide, not tech-only: ")
 
 doc.add_heading("Risk framework",2)
 bullet("Primary control: the macro overlay de-grosses to as low as 30% equities in stress — the source of the −21% "

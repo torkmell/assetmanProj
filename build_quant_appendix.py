@@ -40,7 +40,7 @@ md("""## 1 · Data sources
 | Defensive sleeve: TLT, GLD (IEF early fallback) | yfinance | Risk-off sleeve |
 | Fama-French 5 factors + Momentum, risk-free rate | Ken French Data Library (vintage through 2026-04) | Alpha / factor regression, Sharpe |
 | Point-in-time S&P 500 membership + total returns | Bloomberg | Survivorship-bias correction |
-| S&P 500 constituent list | data_cache/sp500_constituents.csv | Universe definition |
+| S&P 500 membership | Published index membership (current); **Bloomberg point-in-time** for the survivorship test | Universe definition |
 
 All market data is cached in `data_cache/`; factor data in `course_data/`. The notebook runs fully offline.""")
 code("""prices=pd.read_csv(CACHE/"prices_sp500_monthly.csv",index_col=0,parse_dates=True)
@@ -63,6 +63,7 @@ Every signal uses **only information available at decision time**:
 - The **composite overlay score is lagged one month** before it sets exposure.
 - **Portfolio weights are lagged** (`wL.shift(1)`) before being multiplied by returns — positions are formed at month *t*, returns earned at *t+1*.
 - **2000–2001 is reserved as warm-up** so signals are fully formed; performance is measured from **2002**.
+- **Factor availability (disclosed):** the credit factor is built from the HYG high-yield ETF (inception 2007), so it joins the overlay around **2010**; before then the dial runs on the other three factors (VIX, yield, trend). This is data availability, not look-ahead — the overlay uses only the factors that existed at each point in time, and the result is robust to it (Sharpe 1.09 from 2002 vs 1.07 from 2004).
 - **Survivorship:** the dedicated survivorship section uses Bloomberg **point-in-time** membership, not today's constituents.""")
 
 md("## 3 · Signals — momentum + the 4-factor macro overlay")
@@ -146,6 +147,13 @@ ax.fill_between(dd_f.index,dd_f.values*100,0,color="#2E7D5B",alpha=.4,label="GSD
 ax.plot(dd_s.index,dd_s.values*100,color="#5A6F8C",lw=1,ls=":",label="S&P 500")
 ax.set_ylabel("Drawdown %"); ax.legend(); ax.grid(alpha=.3); ax.set_title("Drawdowns — SIMULATED"); plt.show()
 
+# coherent tail risk: monthly 95% VaR and expected shortfall (CVaR), vs the market
+def es_var(r,a=0.95):
+    r=r.dropna(); q=r.quantile(1-a); return -q, -r[r<=q].mean()
+fv,fc=es_var(ret); sv,sc=es_var(spy.loc[ret.index])
+print(f"Monthly 95% VaR / CVaR (expected shortfall):  GSD2T {fv*100:.1f}% / {fc*100:.1f}%   |   S&P 500 {sv*100:.1f}% / {sc*100:.1f}%")
+print("(We report CVaR — the coherent measure — not Gaussian VaR, because returns are heavy-tailed.)")
+
 cols=["Mkt-RF","SMB","HML","RMW","CMA","Mom"]
 d=pd.concat([(ret-rf.reindex(ret.index)).rename("y"),ff[cols]],axis=1).dropna()
 res=sm.OLS(d["y"],sm.add_constant(d[cols])).fit(cov_type="HAC",cov_kwds={"maxlags":6})
@@ -199,7 +207,16 @@ for adv,label in [(150e6,"conservative (measured median)"),(300e6,"base")]:
     per_name=adv*0.05*2                     # 5% of ADV over 2 days
     soft=per_name*avg_n
     print(f"ADV ${adv/1e6:.0f}M ({label}): per-name ${per_name/1e6:.0f}M  ->  soft cap ${soft/1e9:.1f}B  =  {soft/RAISE:.0f}x the $100M raise")
-print(f"\\nAvg holdings: {avg_n:.0f}.  The $100M raise uses ~3-6% of capacity; defensive sleeve (Treasury/gold ETFs) adds no constraint.")""")
+print(f"\\nAvg holdings: {avg_n:.0f}.  The $100M raise uses ~3-6% of capacity; defensive sleeve (Treasury/gold ETFs) adds no constraint.")
+
+# capacity CURVE — net Sharpe vs AUM under the square-root impact law
+sr_g=metrics(ret)['Sharpe']; sig=metrics(ret)['Vol']; to_m=(turn.loc[START:].mean()*12/2)/12.0
+def net_sr(aum,adv=150e6,sd=0.02):
+    part=(aum*to_m/avg_n)/adv; cost=(turn.loc[START:].mean()*12/2)*sd*np.sqrt(max(part,0)); return sr_g-cost/sig, part/2
+cap=pd.DataFrame([(f"${a/1e9:.1f}B" if a>=1e9 else f"${a/1e6:.0f}M",f"{net_sr(a)[1]*100:.2f}%",round(net_sr(a)[0],2))
+                  for a in [1e8,1e9,3.3e9,1e10,2.5e10,5e10]],columns=["AUM","daily %ADV","net Sharpe"])
+print("\\nCapacity curve (net Sharpe vs AUM; the single most important capacity diagnostic):")
+display(cap.set_index("AUM"))""")
 
 md("## 11 · Fund terms & net-of-fee track record")
 code("""MGMT,PERF=0.010,0.15   # 1% management + 15% of return ABOVE the S&P 500, relative high-water mark

@@ -126,7 +126,7 @@ cmap=plt.cm.viridis(np.linspace(0,0.85,len(VAR)))
 for i,name in enumerate(order):
     c=curves[name]
     if name=="S&P 500 (SPY)": ax.plot(c.index,c.values,color="black",lw=1.3,ls="--",label=f"{name} ({results[name]['full']['CAGR']*100:.1f}%, SR {results[name]['full']['Sharpe']:.2f})")
-    elif name=="V0 Baseline (current)": ax.plot(c.index,c.values,color="crimson",lw=2.4,label=f"{name} ({results[name]['full']['CAGR']*100:.1f}%, SR {results[name]['full']['Sharpe']:.2f})")
+    elif name=="V1 Defensive sleeve": ax.plot(c.index,c.values,color="crimson",lw=2.8,zorder=5,label=f"{name} ({results[name]['full']['CAGR']*100:.1f}%, SR {results[name]['full']['Sharpe']:.2f})")
     else: ax.plot(c.index,c.values,color=cmap[i],lw=1.5,label=f"{name} ({results[name]['full']['CAGR']*100:.1f}%, SR {results[name]['full']['Sharpe']:.2f})")
 ax.set_yscale("log"); ax.set_title("Variant bake-off — growth of $1 (SIMULATED, monthly, net 15bps)")
 ax.set_ylabel("Growth of $1 (log)"); ax.legend(fontsize=8,loc="upper left"); ax.grid(alpha=0.3)

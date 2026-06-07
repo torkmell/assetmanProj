@@ -88,6 +88,11 @@ def navmetrics(nav):
 mg=navmetrics(gross_nav); mn=navmetrics(net_nav); ms=metrics(spy_seg)
 
 avg_cash=float(cashw.loc[START:END].mean()); avg_to=float(turn.loc[START:END].mean())
+# coherent tail risk: monthly 95% VaR and CVaR (expected shortfall), reported as positive losses
+def es_var(r,a=0.95):
+    r=r.dropna(); q=r.quantile(1-a); es=r[r<=q].mean()
+    return {"VaR95_monthly":float(-q),"CVaR95_monthly":float(-es)}
+tail_fund=es_var(ret); tail_spy=es_var(spy_seg)
 def pairs(s): return [[t.strftime("%Y-%m-%d"),float(v)] for t,v in s.dropna().items()]
 out={
  "meta":{"strategy":"GSD2T Macro-Overlay Sector-Wide + Defensive Sleeve (V1)","window":f"{START[:7]} to {END:%Y-%m}",
@@ -102,6 +107,7 @@ out={
  "net_of_fee":{"gross":mg,"net":mn,"spy":ms,"fee_drag_cagr":mg["CAGR"]-mn["CAGR"],"net_vs_spy":mn["CAGR"]-ms["CAGR"],
    "total_mgmt_per_dollar":float(tot_m),"total_perf_per_dollar":float(tot_p)},
  "ops":{"avg_cash":avg_cash,"avg_monthly_turnover":avg_to,"avg_annual_turnover":avg_to*12},
+ "tail_risk":{"fund":tail_fund,"spy":tail_spy},
 }
 Path("v1_flagship.json").write_text(json.dumps(out,indent=2,default=str))
 print("V1 FLAGSHIP — self-consistent numbers")
@@ -109,4 +115,5 @@ print(f"  CAGR {prim['CAGR']*100:.1f}%  Vol {prim['Vol']*100:.1f}%  Sharpe {prim
 print(f"  Alpha {res.params['const']*12*100:+.1f}% (t={res.tvalues['const']:.1f})  IS {ism['Sharpe']:.2f}  OOS {oosm['Sharpe']:.2f}")
 print(f"  NET to investor: {mn['CAGR']*100:.1f}% CAGR (gross {mg['CAGR']*100:.1f}%, SPY {ms['CAGR']*100:.1f}%)  fee drag {(mg['CAGR']-mn['CAGR'])*100:.2f}%/yr")
 print(f"  Avg cash {avg_cash*100:.0f}%  Ann. turnover {avg_to*12*100:.0f}%")
+print(f"  Tail risk (monthly 95%): VaR {tail_fund['VaR95_monthly']*100:.1f}% / CVaR {tail_fund['CVaR95_monthly']*100:.1f}%  vs SPY CVaR {tail_spy['CVaR95_monthly']*100:.1f}%")
 print("Saved v1_flagship.json")
